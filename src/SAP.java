@@ -1,4 +1,10 @@
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Queue;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.HashMap;
+
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
@@ -6,22 +12,41 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class SAP {
 
+	private Digraph digraph;
+	private Queue<Integer> pathQueue;
+	private HashMap<Integer, Integer> pathSetFromV;
+	private HashMap<Integer, Integer> pathSetFromW;
+	private HashMap<Integer, Boolean> marked;
+	private Result result = null;
+	private BreathFirstPath breathFirstPath;
+	
+	
+	
 	/**
 	 * Constructor takes a digraph (not necessarily a DAG)
 	 * @param g
 	 */
 	public SAP(Digraph g) {
+		digraph = new Digraph(g);
+		pathQueue = new Queue<>();
+		pathSetFromV = new HashMap<>();
+		pathSetFromW = new HashMap<>();
+		marked = new HashMap<>();
+		breathFirstPath = new BreathFirstPath();
 		
 	}
 	
 	/**
-	 *  Length of shortest ancestral path between v and w; -1 if no suchp ath
+	 *  Length of shortest ancestral path between v and w; -1 if no such path
 	 * @param v
 	 * @param w
 	 * @return
 	 */
 	public int length(int v, int w) {
-		return 0;
+
+		result = breathFirstPath.bfs(digraph, v, w);
+		return result.getLength();
+		
 	}
 	
 	 
@@ -32,7 +57,9 @@ public class SAP {
 	 * @return
 	 */
 	public int ancestor(int v, int w) {
-		return 0;
+		result = breathFirstPath.bfs(digraph, v, w);
+		return result.getAncestor();
+		
 	}
 	
 	/**
@@ -55,12 +82,14 @@ public class SAP {
 		return 0;
 	}
 	
+	
+	
 	/**
 	 * Do unit testing of this class
 	 * @param args
 	 */
 	public static void main(String args[]) {
-		 In in = new In(args[0]);
+		 In in = new In("/resources/digraph2.txt");
 		    Digraph G = new Digraph(in);
 		    SAP sap = new SAP(G);
 		    while (!StdIn.isEmpty()) {
