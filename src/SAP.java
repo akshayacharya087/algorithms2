@@ -32,7 +32,7 @@ public class SAP {
 		pathSetFromV = new HashMap<>();
 		pathSetFromW = new HashMap<>();
 		marked = new HashMap<>();
-		breathFirstPath = new BreathFirstPath();
+		breathFirstPath = new BreathFirstPath(g);
 		
 	}
 	
@@ -43,8 +43,7 @@ public class SAP {
 	 * @return
 	 */
 	public int length(int v, int w) {
-
-		result = breathFirstPath.bfs(digraph, v, w);
+		result = breathFirstPath.bfs(v, w);
 		return result.getLength();
 		
 	}
@@ -57,7 +56,7 @@ public class SAP {
 	 * @return
 	 */
 	public int ancestor(int v, int w) {
-		result = breathFirstPath.bfs(digraph, v, w);
+		result = breathFirstPath.bfs(v, w);
 		return result.getAncestor();
 		
 	}
@@ -69,7 +68,8 @@ public class SAP {
 	 * @return
 	 */
 	public int length(Iterable<Integer> v, Iterable<Integer> w) {
-		return 0;
+		result = breathFirstPath.bfs(v, w);
+		return result.getLength();
 	}
 	
 	/**
@@ -79,10 +79,10 @@ public class SAP {
 	 * @return
 	 */
 	public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-		return 0;
+		result = breathFirstPath.bfs(v, w);
+		return result.getAncestor();
 	}
-	
-	
+		
 	
 	/**
 	 * Do unit testing of this class

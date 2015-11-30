@@ -6,21 +6,46 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class Outcast {
 
+	private final WordNet wordNet;
+	
 	/**
 	 * Constructor takes a WordNet object
 	 * @param wordnet
-	 */
+	 */	
 	public Outcast(WordNet wordnet) {
-		
+		this.wordNet = wordnet;
 	}
 	
 	/**
-	 * Given an array of WordNet nouns, return an oucast
+	 * Given an array of WordNet nouns, return an outcast
 	 * @param nouns
 	 * @return
 	 */
 	public String outcast(String[] nouns) {
-		return null;
+		int maxDistance = Integer.MIN_VALUE;
+		String outcast = null;
+		int sumOfDistances = 0;
+		int index = 0;
+		int distance = 0;
+		
+		while (index < nouns.length) {
+			for (int i = 0; i < nouns.length; i++) {
+				if (index != i) {
+					distance = wordNet.distance(nouns[index], nouns[i]);
+				}
+				sumOfDistances += distance;				
+			}
+			System.out.println("The distance for " + nouns[index] + " is " + sumOfDistances);
+			if (sumOfDistances > maxDistance) {
+				maxDistance = sumOfDistances;
+				outcast = nouns[index];
+			}
+			
+			sumOfDistances = 0;
+			index++;
+		}
+				
+		return outcast;
 	}
 	
 	/**
@@ -28,12 +53,10 @@ public class Outcast {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		  WordNet wordnet = new WordNet(args[0], args[1]);
-		    Outcast outcast = new Outcast(wordnet);
-		    for (int t = 2; t < args.length; t++) {
-		        In in = new In(args[t]);
-		        String[] nouns = in.readAllStrings();
-		        StdOut.println(args[t] + ": " + outcast.outcast(nouns));
-		    }
+		WordNet wordnet = new WordNet("/resources/synsets.txt", "/resources/hypernyms.txt");
+	    Outcast outcast = new Outcast(wordnet);		   
+        In in = new In("/resources/outcast5.txt");
+        String[] nouns = in.readAllStrings();
+        StdOut.println("outcastX.txt: " + outcast.outcast(nouns));		   
 	}
 }

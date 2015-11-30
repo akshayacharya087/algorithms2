@@ -2,14 +2,14 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class WordNet {
 
-	private final ArrayList<Integer> synsetsList;
-	private final ArrayList<String> nounsList;
-	private final ArrayList<String> glossList;
+	private final HashMap<String, ArrayList<Integer>> synsetsMap;	
 
 	private final Digraph wordNet;
 
@@ -24,28 +24,35 @@ public class WordNet {
 		
 		In in = new In(synsets);
 			
-		synsetsList = new ArrayList<Integer>();
-		nounsList = new ArrayList<String>();
-		glossList = new ArrayList<String>();
+		synsetsMap = new HashMap<>(); 		
+		int synsetCounter = 0;
 		
-		// Filling the synsets, nounds, and gloss lists
+		// Filling the synsets, and nouns
 		while (in.hasNextLine()) {
 			String[] elements = in.readLine().split(",");
-			synsetsList.add(Integer.parseInt(elements[0]));
-			nounsList.add(elements[1]);
-			glossList.add(elements[2]);
+			String[] nouns = elements[1].split(" ");
+			for (String noun : nouns) {
+				if (synsetsMap.containsKey(noun)) {
+					synsetsMap.get(noun).add(Integer.parseInt(elements[0]));
+				}
+				else {
+					ArrayList<Integer> synsetsIds = new ArrayList<>();
+					synsetsIds.add(Integer.parseInt(elements[0]));
+					synsetsMap.put(noun, synsetsIds);
+				}				
+			}
+			synsetCounter++;
 		}
 		
 		// Creating the digraph
-		wordNet = new Digraph(synsetsList.size());
+		wordNet = new Digraph(synsetCounter);
 		
 		in = new In(hypernyms);
 		
 		while(in.hasNextLine()) {
 			String[] elements = in.readLine().split(",");
-			
-			for (int i = elements.length - 1; i > 0; i--) {
-				wordNet.addEdge(Integer.parseInt(elements[i]), Integer.parseInt(elements[0]));
+			for (int i = 1; i < elements.length; i++) {
+				wordNet.addEdge(Integer.parseInt(elements[0]), Integer.parseInt(elements[i]));
 			}
 			
 		}
@@ -57,7 +64,7 @@ public class WordNet {
 	 * @return
 	 */
 	public Iterable<String> nouns() {
-		return nounsList;
+		return synsetsMap.keySet();
 	}
 
 	/**
@@ -69,8 +76,7 @@ public class WordNet {
 	public boolean isNoun(String word) {
 		if (word == null) throw new NullPointerException();
 		
-		int index = nounsList.indexOf(word);
-		return (index != -1);
+		return (synsetsMap.containsKey(word));
 	}
 
 	/**
@@ -80,7 +86,9 @@ public class WordNet {
 	 * @return
 	 */
 	public int distance(String nounA, String nounB) {
-		return 0;
+		BreathFirstPath breathFirstPath = new BreathFirstPath(wordNet);
+		Result result = breathFirstPath.bfs(synsetsMap.get(nounA), synsetsMap.get(nounB));
+		return result.getLength();
 	}
 	
 	
@@ -93,7 +101,9 @@ public class WordNet {
 	 * @return
 	 */
 	public String sap(String nounA, String nounB) {
-		return null;
+		BreathFirstPath breathFirstPath = new BreathFirstPath(wordNet);
+		Result result = breathFirstPath.bfs(synsetsMap.get(nounA), synsetsMap.get(nounB));
+		return "result";
 	}
 
 	/**
