@@ -9,7 +9,8 @@ import java.util.Scanner;
 
 public class WordNet {
 
-	private final HashMap<String, ArrayList<Integer>> synsetsMap;	
+	private final HashMap<String, ArrayList<Integer>> nounsMap;	
+	private final HashMap<Integer, String> synsetsMap;
 
 	private final Digraph wordNet;
 
@@ -24,23 +25,31 @@ public class WordNet {
 		
 		In in = new In(synsets);
 			
-		synsetsMap = new HashMap<>(); 		
+		nounsMap = new HashMap<>(); 
+		synsetsMap = new HashMap<>();
 		int synsetCounter = 0;
 		
 		// Filling the synsets, and nouns
 		while (in.hasNextLine()) {
 			String[] elements = in.readLine().split(",");
+			int synsetId = Integer.parseInt(elements[0]);
 			String[] nouns = elements[1].split(" ");
+			
+			// Filling nounsMap
 			for (String noun : nouns) {
-				if (synsetsMap.containsKey(noun)) {
-					synsetsMap.get(noun).add(Integer.parseInt(elements[0]));
+				if (nounsMap.containsKey(noun)) {
+					nounsMap.get(noun).add(synsetId);
 				}
 				else {
 					ArrayList<Integer> synsetsIds = new ArrayList<>();
-					synsetsIds.add(Integer.parseInt(elements[0]));
-					synsetsMap.put(noun, synsetsIds);
-				}				
+					synsetsIds.add(synsetId);
+					nounsMap.put(noun, synsetsIds);
+				}
 			}
+			
+			synsetsMap.put(new Integer(synsetId), elements[1].replace(" ", ","));
+			
+			
 			synsetCounter++;
 		}
 		
@@ -64,7 +73,7 @@ public class WordNet {
 	 * @return
 	 */
 	public Iterable<String> nouns() {
-		return synsetsMap.keySet();
+		return nounsMap.keySet();
 	}
 
 	/**
@@ -73,10 +82,9 @@ public class WordNet {
 	 * @param word
 	 * @return
 	 */
-	public boolean isNoun(String word) {
-		if (word == null) throw new NullPointerException();
-		
-		return (synsetsMap.containsKey(word));
+	public boolean isNoun(String word) {		
+		checkInput(word);
+		return (nounsMap.containsKey(word));
 	}
 
 	/**
@@ -86,8 +94,10 @@ public class WordNet {
 	 * @return
 	 */
 	public int distance(String nounA, String nounB) {
+		checkInputs(nounA, nounB);
+		
 		BreathFirstPath breathFirstPath = new BreathFirstPath(wordNet);
-		Result result = breathFirstPath.bfs(synsetsMap.get(nounA), synsetsMap.get(nounB));
+		Result result = breathFirstPath.bfs(nounsMap.get(nounA), nounsMap.get(nounB));
 		return result.getLength();
 	}
 	
@@ -101,9 +111,31 @@ public class WordNet {
 	 * @return
 	 */
 	public String sap(String nounA, String nounB) {
+		checkInputs(nounA, nounB);
+		
 		BreathFirstPath breathFirstPath = new BreathFirstPath(wordNet);
-		Result result = breathFirstPath.bfs(synsetsMap.get(nounA), synsetsMap.get(nounB));
-		return "result";
+		Result result = breathFirstPath.bfs(nounsMap.get(nounA), nounsMap.get(nounB));
+		return synsetsMap.get(result.getAncestor());
+	}
+
+	/**
+	 * Checks that parameters are not null, and that they belong to a rooted DAG.
+	 * @param nounA
+	 * @param nounB
+	 */
+	private void checkInputs(String nounA, String nounB) {
+		if (nounA == null || nounB == null) throw new NullPointerException();
+		
+		if (!nounsMap.containsKey(nounA) || !nounsMap.containsKey(nounB)) throw new IllegalArgumentException();
+		
+	}
+	
+	/**
+	 * Checks that the String is not null
+	 * @param word
+	 */
+	private void checkInput(String word) {
+		if (word == null) throw new NullPointerException();
 	}
 
 	/**
@@ -114,10 +146,9 @@ public class WordNet {
 	public static void main(String[] args) {
 		WordNet wordNet = new WordNet("/resources/synsets.txt", "/resources/hypernyms.txt");
 		Scanner in = new Scanner(System.in);
-		String word = in.nextLine();
-		
-		System.out.println("Is the word " + word + " in the nouns list? " + wordNet.isNoun(word));
-		
+		String word1 = in.nextLine();
+		String word2 = in.nextLine();
+		System.out.println("The sap of " + word1 + " and " + word2 + " is " + wordNet.sap(word1, word2));
 		System.out.println("Successfully finished");
 	}
 }

@@ -43,12 +43,23 @@ public class SAP {
 	 * @return
 	 */
 	public int length(int v, int w) {
+		checkInput(v);
+		checkInput(w);
 		result = breathFirstPath.bfs(v, w);
 		return result.getLength();
 		
 	}
 	
-	 
+	 /**
+	  * Checks that the input is between 0 and digraph.V()-1
+	  * @param v
+	  * @param w
+	  */
+	private void checkInput(int vertex) {
+		if (!(vertex >= 0 && vertex <= digraph.V() -1)) throw new IndexOutOfBoundsException(); 
+		
+	}
+
 	/**
 	 * A common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
 	 * @param v
@@ -56,6 +67,8 @@ public class SAP {
 	 * @return
 	 */
 	public int ancestor(int v, int w) {
+		checkInput(v);
+		checkInput(w);
 		result = breathFirstPath.bfs(v, w);
 		return result.getAncestor();
 		
@@ -67,11 +80,25 @@ public class SAP {
 	 * @param w
 	 * @return
 	 */
-	public int length(Iterable<Integer> v, Iterable<Integer> w) {
+	public int length(Iterable<Integer> v, Iterable<Integer> w) {	
+		checkInputArray(v);
+		checkInputArray(w);
+		
 		result = breathFirstPath.bfs(v, w);
 		return result.getLength();
 	}
 	
+	/**
+	 * Checks that all integers in the array are between 0 and digraph.V() - 1
+	 * @param v
+	 */
+	private void checkInputArray(Iterable<Integer> vertexList) {
+		for (int vertex : vertexList) {
+			checkInput(vertex);
+		}
+		
+	}
+
 	/**
 	 * A common ancestor that participates in shortest ancestral path; -1 if no such path
 	 * @param v
@@ -89,7 +116,7 @@ public class SAP {
 	 * @param args
 	 */
 	public static void main(String args[]) {
-		 In in = new In("/resources/digraph2.txt");
+		 In in = new In("/resources/digraph1.txt");
 		    Digraph G = new Digraph(in);
 		    SAP sap = new SAP(G);
 		    while (!StdIn.isEmpty()) {

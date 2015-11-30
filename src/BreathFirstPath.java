@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import edu.princeton.cs.algs4.Digraph;
@@ -25,67 +26,11 @@ public class BreathFirstPath {
 	 * @return
 	 */
 	public Result bfs(int v, int w) {
-		marked = new HashMap<>();
-		Result result = new Result();
-		pathV = new HashMap<>();
-		pathW = new HashMap<>();
-		Queue<Integer> queueV = new Queue<Integer>();
-		Queue<Integer> queueW = new Queue<Integer>();
-
-		queueV.enqueue(v);
-		queueW.enqueue(w);
-
-		marked.put(new Integer(v), true);
-		marked.put(new Integer(w), true);
-		pathV.put(new Integer(v), 0);
-		pathW.put(new Integer(w), 0);
-
-		while (!queueV.isEmpty() || !queueW.isEmpty()) {
-			if (result.getAncestor() == -1) {
-				if (!queueV.isEmpty()) {
-					int currentV = queueV.dequeue();
-					lengthV++;
-
-					for (int adjacent : graph.adj(currentV)) {
-						if (!marked.containsKey(adjacent)) {
-
-							queueV.enqueue(adjacent);
-							marked.put(new Integer(adjacent), true);
-							pathV.put(new Integer(adjacent), lengthV);
-						} else {
-							// lengthV++;
-							pathV.put(new Integer(adjacent), lengthV);
-							result.setLength(pathV.get(adjacent) + pathW.get(adjacent));
-							result.setAncestor(adjacent);
-							break;
-						}
-					}
-				}
-
-				if (!queueW.isEmpty()) {
-					int currentW = queueW.dequeue();
-					lengthW++;
-
-					for (int adjacent : graph.adj(currentW)) {
-						if (!marked.containsKey(adjacent)) {
-							queueW.enqueue(adjacent);
-							marked.put(new Integer(adjacent), true);
-							pathW.put(new Integer(adjacent), lengthW);
-
-						} else {
-							pathW.put(new Integer(adjacent), lengthW);
-							result.setLength(pathV.get(adjacent) + pathW.get(adjacent));
-							result.setAncestor(adjacent);
-							break;
-						}
-					}
-				}
-			} // end of if
-			else
-				break;
-		} // end of while
-
-		return result;
+		ArrayList<Integer> vArray = new ArrayList<>();
+		ArrayList<Integer> wArray = new ArrayList<>();
+		vArray.add(v);
+		wArray.add(w);
+		return bfs(vArray, wArray);
 	}// end of method
 
 	/**
