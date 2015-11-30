@@ -123,7 +123,7 @@ public class BreathFirstPath {
 			if (result.getAncestor() == -1) {
 				if (!queueV.isEmpty()) {
 					int currentV = queueV.dequeue();
-					lengthV++;
+					lengthV = pathV.get(currentV) + 1;
 
 					for (int adjacent : graph.adj(currentV)) {
 						if (!marked.containsKey(adjacent)) {
@@ -148,7 +148,7 @@ public class BreathFirstPath {
 
 				if (!queueW.isEmpty()) {
 					int currentW = queueW.dequeue();
-					lengthW++;
+					lengthW = pathW.get(currentW) + 1;
 
 					for (int adjacent : graph.adj(currentW)) {		
 						if (!marked.containsKey(adjacent)) {

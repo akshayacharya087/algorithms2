@@ -55,7 +55,7 @@ public class Outcast {
 	public static void main(String[] args) {
 		WordNet wordnet = new WordNet("/resources/synsets.txt", "/resources/hypernyms.txt");
 	    Outcast outcast = new Outcast(wordnet);		   
-        In in = new In("/resources/outcast5.txt");
+        In in = new In("/resources/outcast11.txt");
         String[] nouns = in.readAllStrings();
         StdOut.println("outcastX.txt: " + outcast.outcast(nouns));		   
 	}
