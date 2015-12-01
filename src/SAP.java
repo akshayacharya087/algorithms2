@@ -27,7 +27,7 @@ public class SAP {
 	 * @param g
 	 */
 	public SAP(Digraph g) {
-		digraph = new Digraph(g);
+		digraph = g;
 		pathQueue = new Queue<>();
 		pathSetFromV = new HashMap<>();
 		pathSetFromW = new HashMap<>();
@@ -116,16 +116,15 @@ public class SAP {
 	 * @param args
 	 */
 	public static void main(String args[]) {
-		 In in = new In("/resources/digraph1.txt");
-		    Digraph G = new Digraph(in);
-		    SAP sap = new SAP(G);
-		    while (!StdIn.isEmpty()) {
-		        int v = StdIn.readInt();
-		        int w = StdIn.readInt();
-		        int length   = sap.length(v, w);
-		        int ancestor = sap.ancestor(v, w);
-		        StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
-		    }
+		In in = new In("/resources/digraph1.txt");
+	    Digraph G = new Digraph(in);
+	    SAP sap = new SAP(G);
+        int v = 3;
+        int w = 11;
+        int length   = sap.length(v, w);
+        int ancestor = sap.ancestor(v, w);
+        StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
+	    
 	}
 	
 }

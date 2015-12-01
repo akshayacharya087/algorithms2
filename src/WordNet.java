@@ -12,8 +12,8 @@ public class WordNet {
 	private final HashMap<String, ArrayList<Integer>> nounsMap;	
 	private final HashMap<Integer, String> synsetsMap;
 
-	private final Digraph wordNet;
-
+	private final Digraph wordNet;	
+	private final SAP sap;
 	/**
 	 * Constructor takes the name of the two input files
 	 * 
@@ -65,6 +65,9 @@ public class WordNet {
 			}
 			
 		}
+		
+		// Creating the SAP object
+		sap = new SAP(wordNet);		
 	}
 
 	/**
@@ -94,11 +97,12 @@ public class WordNet {
 	 * @return
 	 */
 	public int distance(String nounA, String nounB) {
-		checkInputs(nounA, nounB);
+		checkInputs(nounA, nounB);		
 		
-		BreathFirstPath breathFirstPath = new BreathFirstPath(wordNet);
-		Result result = breathFirstPath.bfs(nounsMap.get(nounA), nounsMap.get(nounB));
-		return result.getLength();
+		return sap.length(nounsMap.get(nounA), nounsMap.get(nounB));
+		
+		//Result result = breathFirstPath.bfs(nounsMap.get(nounA), nounsMap.get(nounB));
+		//return result.getLength();
 	}
 	
 	
@@ -111,11 +115,12 @@ public class WordNet {
 	 * @return
 	 */
 	public String sap(String nounA, String nounB) {
-		checkInputs(nounA, nounB);
+		checkInputs(nounA, nounB);				
 		
-		BreathFirstPath breathFirstPath = new BreathFirstPath(wordNet);
-		Result result = breathFirstPath.bfs(nounsMap.get(nounA), nounsMap.get(nounB));
-		return synsetsMap.get(result.getAncestor());
+		int ancestor = sap.ancestor(nounsMap.get(nounA), nounsMap.get(nounB));
+				
+		//Result result = breathFirstPath.bfs(nounsMap.get(nounA), nounsMap.get(nounB));
+		return synsetsMap.get(ancestor);
 	}
 
 	/**

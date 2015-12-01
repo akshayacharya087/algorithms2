@@ -11,9 +11,13 @@ public class BreathFirstPath {
 	private int lengthV = 0;
 	private int lengthW = 0;
 	private Digraph graph;
+	private int shortestLengthV;
+	private int shortestLengthW;
 
 	public BreathFirstPath(Digraph graph) {
 		this.graph = graph;
+		shortestLengthW = Integer.MAX_VALUE;
+		shortestLengthV = Integer.MAX_VALUE;
 	}
 
 	/**
@@ -26,6 +30,14 @@ public class BreathFirstPath {
 	 * @return
 	 */
 	public Result bfs(int v, int w) {
+		
+		if (v == w) { 
+			Result result = new Result();
+			result.setAncestor(v);
+			result.setLength(0);
+			return result;
+		} 
+		
 		ArrayList<Integer> vArray = new ArrayList<>();
 		ArrayList<Integer> wArray = new ArrayList<>();
 		vArray.add(v);
@@ -68,59 +80,96 @@ public class BreathFirstPath {
 			if (result.getAncestor() == -1) {
 				if (!queueV.isEmpty()) {
 					int currentV = queueV.dequeue();
+					
+					
 					lengthV = pathV.get(currentV) + 1;
 
+					
+					
 					for (int adjacent : graph.adj(currentV)) {
 						if (!marked.containsKey(adjacent)) {
 							queueV.enqueue(adjacent);
 							marked.put(new Integer(adjacent), true);
 							pathV.put(new Integer(adjacent), lengthV);
+							
+							
 						} else {
-							try {
-								int pathWexists = pathW.get(adjacent);
-								pathV.put(new Integer(adjacent), lengthV);
-								result.setLength(pathV.get(adjacent) + pathW.get(adjacent));
-								result.setAncestor(adjacent);
-								break;
+							
+							pathV.put(new Integer(adjacent), lengthV);
+							
+							if (lengthV < shortestLengthV)  {
+								shortestLengthV = lengthV;
 							}
-							catch (Exception e) {
-								// do nothing
-							}
-			
+								
+							
+							if (queueV.isEmpty()) {							
+													
+								try {									
+									
+									// w is the shortest common ancestor
+									if (pathW.containsKey(adjacent)) {
+										result.setLength(pathV.get(adjacent));
+										result.setAncestor(adjacent);
+										return result;
+									}
+								}
+								catch (Exception e) {
+									// do nothing
+								}
+								
+							}// end if
 						}//end else
 					}//end for
 				}// end if
 
 				if (!queueW.isEmpty()) {
 					int currentW = queueW.dequeue();
+
+					
 					lengthW = pathW.get(currentW) + 1;
 
-					for (int adjacent : graph.adj(currentW)) {		
+					
+					
+					for (int adjacent : graph.adj(currentW)) {
 						if (!marked.containsKey(adjacent)) {
 							queueW.enqueue(adjacent);
 							marked.put(new Integer(adjacent), true);
 							pathW.put(new Integer(adjacent), lengthW);
-
+															
 						} else {
-							try {
-								int pathVexists = pathV.get(adjacent);
-								pathW.put(new Integer(adjacent), lengthW);
-								result.setLength(pathV.get(adjacent) + pathW.get(adjacent));
-								result.setAncestor(adjacent);
-								break;
+			
+							pathW.put(new Integer(adjacent), lengthW);
+							
+							if (lengthW < shortestLengthW)  {
+								shortestLengthW = lengthW;
 							}
-							catch (Exception e) {
-								// do nothing
-							}
-						}
-					}
-				}
-			} // end of if
-			else
-				break;
+								
+							
+							if (queueW.isEmpty()) {							
+													
+								try {									
+									
+									// v is the shortest common ancestor
+									if (pathV.containsKey(adjacent)) {
+										result.setLength(pathW.get(adjacent));
+										result.setAncestor(adjacent);
+										return result;
+									}
+								}
+								catch (Exception e) {
+									// do nothing
+								}
+								
+							}// end if
+						}//end else
+					}//end for
+				}// end if
+			}//end if
+			else break;
 		} // end of while
 
 		return result;
 	}// end of method
 
 }
+
