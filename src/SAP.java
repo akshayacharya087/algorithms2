@@ -119,8 +119,8 @@ public class SAP {
 		In in = new In("/resources/digraph1.txt");
 	    Digraph G = new Digraph(in);
 	    SAP sap = new SAP(G);
-        int v = 3;
-        int w = 11;
+        int v = 5;
+        int w = 7;
         int length   = sap.length(v, w);
         int ancestor = sap.ancestor(v, w);
         StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);

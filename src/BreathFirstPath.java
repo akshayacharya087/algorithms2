@@ -23,8 +23,7 @@ public class BreathFirstPath {
 	/**
 	 * Breath first search on two vertexes simultaneously, in order to find
 	 * Shortest Ancestral Path and the length.
-	 * 
-	 * @param graph
+	 *
 	 * @param v
 	 * @param w
 	 * @return
@@ -48,8 +47,7 @@ public class BreathFirstPath {
 	/**
 	 * Breath first search on two vertexes simultaneously, in order to find
 	 * Shortest Ancestral Path and the length.
-	 * 
-	 * @param graph
+	 *
 	 * @param v
 	 * @param w
 	 * @return
@@ -74,25 +72,19 @@ public class BreathFirstPath {
 			queueW.enqueue(vertex);
 		}
 
-	
-
 		while (!queueV.isEmpty() || !queueW.isEmpty()) {
 			if (result.getAncestor() == -1) {
 				if (!queueV.isEmpty()) {
 					int currentV = queueV.dequeue();
-					
-					
+
 					lengthV = pathV.get(currentV) + 1;
 
-					
-					
 					for (int adjacent : graph.adj(currentV)) {
 						if (!marked.containsKey(adjacent)) {
 							queueV.enqueue(adjacent);
 							marked.put(new Integer(adjacent), true);
 							pathV.put(new Integer(adjacent), lengthV);
-							
-							
+
 						} else {
 							
 							pathV.put(new Integer(adjacent), lengthV);
@@ -100,15 +92,14 @@ public class BreathFirstPath {
 							if (lengthV < shortestLengthV)  {
 								shortestLengthV = lengthV;
 							}
-								
-							
+
 							if (queueV.isEmpty()) {							
 													
 								try {									
 									
 									// w is the shortest common ancestor
 									if (pathW.containsKey(adjacent)) {
-										result.setLength(pathV.get(adjacent));
+										result.setLength(shortestLengthV + pathW.get(adjacent));
 										result.setAncestor(adjacent);
 										return result;
 									}
@@ -125,11 +116,8 @@ public class BreathFirstPath {
 				if (!queueW.isEmpty()) {
 					int currentW = queueW.dequeue();
 
-					
 					lengthW = pathW.get(currentW) + 1;
 
-					
-					
 					for (int adjacent : graph.adj(currentW)) {
 						if (!marked.containsKey(adjacent)) {
 							queueW.enqueue(adjacent);
@@ -143,15 +131,14 @@ public class BreathFirstPath {
 							if (lengthW < shortestLengthW)  {
 								shortestLengthW = lengthW;
 							}
-								
-							
+
 							if (queueW.isEmpty()) {							
 													
 								try {									
 									
 									// v is the shortest common ancestor
 									if (pathV.containsKey(adjacent)) {
-										result.setLength(pathW.get(adjacent));
+										result.setLength(shortestLengthW + pathV.get(adjacent));
 										result.setAncestor(adjacent);
 										return result;
 									}
