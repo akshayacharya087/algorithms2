@@ -4,4 +4,5 @@ bin/
 .settings
 .zip
 .iml
+.idea
 
