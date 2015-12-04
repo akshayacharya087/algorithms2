@@ -5,19 +5,37 @@ import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.Queue;
 
 public class BreathFirstPath {
-	private HashMap<Integer, Boolean> marked;
-	private HashMap<Integer, Integer> pathV;
-	private HashMap<Integer, Integer> pathW;
-	private int lengthV = 0;
-	private int lengthW = 0;
-	private Digraph graph;
+	private final HashMap<Integer, Boolean> marked;
+	private final HashMap<Integer, Integer> pathV;
+	private final HashMap<Integer, Integer> pathW;
+	private int lengthV;
+	private int lengthW;
+	private final Digraph graph;
 	private int shortestLengthV;
 	private int shortestLengthW;
+    private int shortestLengthVVertex;
+    private int shortestLengthWVertex;
+    private int length;
+    private int ancestor;
 
+    /**
+     * Performs BFS on two vertexes
+     * @param graph Digraph representing WordNet
+     */
 	public BreathFirstPath(Digraph graph) {
 		this.graph = graph;
 		shortestLengthW = Integer.MAX_VALUE;
 		shortestLengthV = Integer.MAX_VALUE;
+
+        marked = new HashMap<>();
+        pathV = new HashMap<>();
+        pathW = new HashMap<>();
+
+        lengthV = 0;
+        lengthW = 0;
+
+        length = -1;
+        ancestor = -1;
 	}
 
 	/**
@@ -28,20 +46,19 @@ public class BreathFirstPath {
 	 * @param w
 	 * @return
 	 */
-	public Result bfs(int v, int w) {
+	public void bfs(int v, int w) {
 		
-		if (v == w) { 
-			Result result = new Result();
-			result.setAncestor(v);
-			result.setLength(0);
-			return result;
+		if (v == w) {
+			ancestor = v;
+			length =0;
+			return;
 		} 
 		
 		ArrayList<Integer> vArray = new ArrayList<>();
 		ArrayList<Integer> wArray = new ArrayList<>();
 		vArray.add(v);
 		wArray.add(w);
-		return bfs(vArray, wArray);
+		bfs(vArray, wArray);
 	}// end of method
 
 	/**
@@ -52,11 +69,21 @@ public class BreathFirstPath {
 	 * @param w
 	 * @return
 	 */
-	public Result bfs(Iterable<Integer> v, Iterable<Integer> w) {
-		marked = new HashMap<>();
-		Result result = new Result();
-		pathV = new HashMap<>();
-		pathW = new HashMap<>();
+	public void bfs(Iterable<Integer> v, Iterable<Integer> w) {
+        length = -1;
+        ancestor = -1;
+        lengthV = 0;
+        lengthW = 0;
+
+        marked.clear();
+        pathV.clear();
+        pathW.clear();
+
+        shortestLengthW = Integer.MAX_VALUE;
+        shortestLengthV = Integer.MAX_VALUE;
+        shortestLengthVVertex = Integer.MAX_VALUE;
+        shortestLengthWVertex = Integer.MAX_VALUE;
+
 		Queue<Integer> queueV = new Queue<Integer>();
 		Queue<Integer> queueW = new Queue<Integer>();
 
@@ -73,7 +100,7 @@ public class BreathFirstPath {
 		}
 
 		while (!queueV.isEmpty() || !queueW.isEmpty()) {
-			if (result.getAncestor() == -1) {
+			if (this.ancestor == -1) {
 				if (!queueV.isEmpty()) {
 					int currentV = queueV.dequeue();
 
@@ -91,23 +118,35 @@ public class BreathFirstPath {
 							
 							if (lengthV < shortestLengthV)  {
 								shortestLengthV = lengthV;
+                                shortestLengthVVertex = adjacent;
 							}
+                            else
+                            {
+                                if (pathW.get(adjacent) < pathV.get(adjacent)){
+                                    shortestLengthVVertex = adjacent;
+                                }
+                            }
 
-							if (queueV.isEmpty()) {							
+							if (queueV.isEmpty()) {
 													
 								try {									
 									
 									// w is the shortest common ancestor
 									if (pathW.containsKey(adjacent)) {
-										result.setLength(shortestLengthV + pathW.get(adjacent));
-										result.setAncestor(adjacent);
-										return result;
+                                        if (shortestLengthW < shortestLengthV) {
+                                            length = pathW.get(shortestLengthWVertex) + pathV.get(shortestLengthWVertex);
+                                            ancestor = shortestLengthWVertex;
+                                        }
+                                        if (shortestLengthV < shortestLengthW) {
+                                            length = pathW.get(shortestLengthVVertex) + pathV.get(shortestLengthVVertex);
+                                            ancestor = shortestLengthVVertex;
+                                        }
+										return;
 									}
 								}
 								catch (Exception e) {
 									// do nothing
 								}
-								
 							}// end if
 						}//end else
 					}//end for
@@ -130,18 +169,31 @@ public class BreathFirstPath {
 							
 							if (lengthW < shortestLengthW)  {
 								shortestLengthW = lengthW;
+                                shortestLengthWVertex = adjacent;
 							}
+                            else
+                            {
+                                if (pathV.get(adjacent) < pathW.get(adjacent)){
+                                    shortestLengthWVertex = adjacent;
+                                }
+                            }
 
-							if (queueW.isEmpty()) {							
+							if (queueW.isEmpty()) {
 													
-								try {									
-									
-									// v is the shortest common ancestor
-									if (pathV.containsKey(adjacent)) {
-										result.setLength(shortestLengthW + pathV.get(adjacent));
-										result.setAncestor(adjacent);
-										return result;
-									}
+								try {
+
+                                    // w is the shortest common ancestor
+                                    if (pathV.containsKey(adjacent)) {
+                                        if (shortestLengthW < shortestLengthV) {
+                                            length = pathW.get(shortestLengthWVertex) + pathV.get(shortestLengthWVertex);
+                                            ancestor = shortestLengthWVertex;
+                                        }
+                                        if (shortestLengthV < shortestLengthW) {
+                                            length = pathW.get(shortestLengthVVertex) + pathV.get(shortestLengthVVertex);
+                                            ancestor = shortestLengthVVertex;
+                                        }
+                                        return;
+                                    }
 								}
 								catch (Exception e) {
 									// do nothing
@@ -154,9 +206,15 @@ public class BreathFirstPath {
 			}//end if
 			else break;
 		} // end of while
-
-		return result;
 	}// end of method
 
+
+    public int getLength() {
+        return length;
+    }
+
+    public int getAncestor() {
+        return ancestor;
+    }
 }
 

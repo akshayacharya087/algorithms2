@@ -25,7 +25,7 @@ public class WordNet {
 		
 		In in = new In(synsets);
 			
-		nounsMap = new HashMap<>(); 
+		nounsMap = new HashMap<>();
 		synsetsMap = new HashMap<>();
 		int synsetCounter = 0;
 		
@@ -97,12 +97,8 @@ public class WordNet {
 	 * @return
 	 */
 	public int distance(String nounA, String nounB) {
-		checkInputs(nounA, nounB);		
-		
+		checkInputs(nounA, nounB);
 		return sap.length(nounsMap.get(nounA), nounsMap.get(nounB));
-		
-		//Result result = breathFirstPath.bfs(nounsMap.get(nounA), nounsMap.get(nounB));
-		//return result.getLength();
 	}
 	
 	
@@ -115,11 +111,8 @@ public class WordNet {
 	 * @return
 	 */
 	public String sap(String nounA, String nounB) {
-		checkInputs(nounA, nounB);				
-		
+		checkInputs(nounA, nounB);
 		int ancestor = sap.ancestor(nounsMap.get(nounA), nounsMap.get(nounB));
-				
-		//Result result = breathFirstPath.bfs(nounsMap.get(nounA), nounsMap.get(nounB));
 		return synsetsMap.get(ancestor);
 	}
 

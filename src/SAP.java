@@ -1,39 +1,21 @@
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.Queue;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.HashMap;
 
 import edu.princeton.cs.algs4.Digraph;
-import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 
 public class SAP {
 
-	private Digraph digraph;
-	private Queue<Integer> pathQueue;
-	private HashMap<Integer, Integer> pathSetFromV;
-	private HashMap<Integer, Integer> pathSetFromW;
-	private HashMap<Integer, Boolean> marked;
-	private Result result = null;
-	private BreathFirstPath breathFirstPath;
-	
-	
-	
+	private final Digraph digraph;
+	private final BreathFirstPath breathFirstPath;
+
 	/**
 	 * Constructor takes a digraph (not necessarily a DAG)
 	 * @param g
 	 */
 	public SAP(Digraph g) {
 		digraph = g;
-		pathQueue = new Queue<>();
-		pathSetFromV = new HashMap<>();
-		pathSetFromW = new HashMap<>();
-		marked = new HashMap<>();
 		breathFirstPath = new BreathFirstPath(g);
-		
 	}
 	
 	/**
@@ -45,15 +27,12 @@ public class SAP {
 	public int length(int v, int w) {
 		checkInput(v);
 		checkInput(w);
-		result = breathFirstPath.bfs(v, w);
-		return result.getLength();
-		
+		breathFirstPath.bfs(v, w);
+		return breathFirstPath.getLength();
 	}
 	
 	 /**
 	  * Checks that the input is between 0 and digraph.V()-1
-	  * @param v
-	  * @param w
 	  */
 	private void checkInput(int vertex) {
 		if (!(vertex >= 0 && vertex <= digraph.V() -1)) throw new IndexOutOfBoundsException(); 
@@ -69,9 +48,8 @@ public class SAP {
 	public int ancestor(int v, int w) {
 		checkInput(v);
 		checkInput(w);
-		result = breathFirstPath.bfs(v, w);
-		return result.getAncestor();
-		
+		breathFirstPath.bfs(v, w);
+		return breathFirstPath.getAncestor();
 	}
 	
 	/**
@@ -84,13 +62,12 @@ public class SAP {
 		checkInputArray(v);
 		checkInputArray(w);
 		
-		result = breathFirstPath.bfs(v, w);
-		return result.getLength();
+		breathFirstPath.bfs(v, w);
+		return breathFirstPath.getLength();
 	}
 	
 	/**
 	 * Checks that all integers in the array are between 0 and digraph.V() - 1
-	 * @param v
 	 */
 	private void checkInputArray(Iterable<Integer> vertexList) {
 		for (int vertex : vertexList) {
@@ -106,8 +83,8 @@ public class SAP {
 	 * @return
 	 */
 	public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-		result = breathFirstPath.bfs(v, w);
-		return result.getAncestor();
+		breathFirstPath.bfs(v, w);
+		return breathFirstPath.getAncestor();
 	}
 		
 	
@@ -116,11 +93,11 @@ public class SAP {
 	 * @param args
 	 */
 	public static void main(String args[]) {
-		In in = new In("/resources/digraph1.txt");
+		In in = new In("/resources/digraph5.txt");
 	    Digraph G = new Digraph(in);
 	    SAP sap = new SAP(G);
-        int v = 5;
-        int w = 7;
+        int v = 21;
+        int w = 15;
         int length   = sap.length(v, w);
         int ancestor = sap.ancestor(v, w);
         StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
