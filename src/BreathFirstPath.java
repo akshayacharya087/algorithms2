@@ -17,6 +17,8 @@ public class BreathFirstPath {
     private int shortestLengthWVertex;
     private int length;
     private int ancestor;
+    private boolean hasVHitAMarkedVertex;
+    private boolean hasWHitAMarkedVertex;
 
     /**
      * Performs BFS on two vertexes
@@ -36,6 +38,9 @@ public class BreathFirstPath {
 
         length = -1;
         ancestor = -1;
+
+        hasVHitAMarkedVertex = false;
+        hasWHitAMarkedVertex = false;
 	}
 
 	/**
@@ -84,6 +89,9 @@ public class BreathFirstPath {
         shortestLengthVVertex = Integer.MAX_VALUE;
         shortestLengthWVertex = Integer.MAX_VALUE;
 
+        hasVHitAMarkedVertex = false;
+        hasWHitAMarkedVertex = false;
+
 		Queue<Integer> queueV = new Queue<Integer>();
 		Queue<Integer> queueW = new Queue<Integer>();
 
@@ -111,35 +119,52 @@ public class BreathFirstPath {
 							queueV.enqueue(adjacent);
 							marked.put(new Integer(adjacent), true);
 							pathV.put(new Integer(adjacent), lengthV);
-
 						} else {
-							
-							pathV.put(new Integer(adjacent), lengthV);
-							
+
+
+                            hasVHitAMarkedVertex = true;
+
 							if (lengthV < shortestLengthV)  {
+                                pathV.put(new Integer(adjacent), lengthV);
 								shortestLengthV = lengthV;
                                 shortestLengthVVertex = adjacent;
 							}
-                            else
-                            {
-                                if (pathW.get(adjacent) < pathV.get(adjacent)){
-                                    shortestLengthVVertex = adjacent;
+
+                            else if (lengthV == shortestLengthV) {
+                                if (pathW.containsKey(adjacent)) {
+                                    if (pathW.get(adjacent) < shortestLengthW) {
+                                        pathV.put(new Integer(adjacent), lengthV);
+                                        shortestLengthV = lengthV;
+                                        shortestLengthVVertex = adjacent;
+                                    }
                                 }
                             }
+                            else
+                            {
+                                if (!pathV.containsKey(adjacent)) {
+                                    pathV.put(new Integer(adjacent), lengthV);
+                                }
 
-							if (queueV.isEmpty()) {
+//                                if (pathW.get(adjacent) < pathV.get(adjacent)){
+//                                    shortestLengthVVertex = adjacent;
+//                                }
+                            }
+
+							if (queueV.isEmpty() && (hasWHitAMarkedVertex || queueW.isEmpty())) {
 													
 								try {									
 									
 									// w is the shortest common ancestor
 									if (pathW.containsKey(adjacent)) {
                                         if (shortestLengthW < shortestLengthV) {
-                                            length = pathW.get(shortestLengthWVertex) + pathV.get(shortestLengthWVertex);
+                                            length = pathV.get(shortestLengthWVertex) + pathW.get(shortestLengthWVertex) ;
                                             ancestor = shortestLengthWVertex;
+                                            return;
                                         }
                                         if (shortestLengthV < shortestLengthW) {
-                                            length = pathW.get(shortestLengthVVertex) + pathV.get(shortestLengthVVertex);
+                                            length = pathV.get(shortestLengthVVertex) + pathW.get(shortestLengthVVertex);
                                             ancestor = shortestLengthVVertex;
+                                            return;
                                         }
 										return;
 									}
@@ -164,21 +189,43 @@ public class BreathFirstPath {
 							pathW.put(new Integer(adjacent), lengthW);
 															
 						} else {
-			
-							pathW.put(new Integer(adjacent), lengthW);
-							
+
+                            hasWHitAMarkedVertex = true;
+
 							if (lengthW < shortestLengthW)  {
-								shortestLengthW = lengthW;
+                                pathW.put(new Integer(adjacent), lengthW);
+                                shortestLengthW = lengthW;
                                 shortestLengthWVertex = adjacent;
 							}
-                            else
-                            {
-                                if (pathV.get(adjacent) < pathW.get(adjacent)){
-                                    shortestLengthWVertex = adjacent;
+
+                            else if (lengthW == shortestLengthW) {
+                                if (pathV.containsKey(adjacent)) {
+                                    if (pathV.get(adjacent) < shortestLengthV) {
+                                        pathW.put(new Integer(adjacent), lengthW);
+                                        shortestLengthW = lengthW;
+                                        shortestLengthWVertex = adjacent;
+                                    }
                                 }
                             }
 
-							if (queueW.isEmpty()) {
+
+                            else
+                            {
+                                if (!pathW.containsKey(adjacent)) {
+                                    pathW.put(new Integer(adjacent), lengthW);
+                                }
+
+//                                if (pathW.get(adjacent) < shortestLengthW) {
+//                                    shortestLengthWVertex = adjacent;
+//                                    shortestLengthW = lengthW;
+//                                }
+
+//                                if (pathV.get(adjacent) < pathW.get(adjacent)){
+//                                    shortestLengthWVertex = adjacent;
+//                                }
+                            }
+
+							if (queueW.isEmpty() && (hasVHitAMarkedVertex || queueV.isEmpty())) {
 													
 								try {
 
@@ -187,11 +234,18 @@ public class BreathFirstPath {
                                         if (shortestLengthW < shortestLengthV) {
                                             length = pathW.get(shortestLengthWVertex) + pathV.get(shortestLengthWVertex);
                                             ancestor = shortestLengthWVertex;
+                                            return;
                                         }
                                         if (shortestLengthV < shortestLengthW) {
                                             length = pathW.get(shortestLengthVVertex) + pathV.get(shortestLengthVVertex);
                                             ancestor = shortestLengthVVertex;
+                                            return;
                                         }
+                                        else {
+                                            length = pathW.get(adjacent) + pathV.get(adjacent);
+                                            ancestor = adjacent;
+                                        }
+
                                         return;
                                     }
 								}
@@ -206,6 +260,76 @@ public class BreathFirstPath {
 			}//end if
 			else break;
 		} // end of while
+
+        if (hasVHitAMarkedVertex || hasWHitAMarkedVertex) {
+            if (!pathV.containsKey(shortestLengthWVertex) && pathW.containsKey(shortestLengthWVertex)) {
+                length = pathW.get(shortestLengthWVertex);
+                ancestor = shortestLengthWVertex;
+                return;
+            }
+            if (!pathW.containsKey(shortestLengthWVertex) && pathV.containsKey(shortestLengthWVertex)) {
+                length = pathV.get(shortestLengthWVertex);
+                ancestor = shortestLengthWVertex;
+                return;
+            }
+            if (pathV.containsKey(shortestLengthWVertex) && pathW.containsKey(shortestLengthWVertex)) {
+                length = pathV.get(shortestLengthWVertex) + pathW.get(shortestLengthWVertex);
+                ancestor = shortestLengthWVertex;
+                return;
+            }
+            if (shortestLengthV != Integer.MAX_VALUE && shortestLengthW == Integer.MAX_VALUE) {
+                if (!pathV.containsKey(shortestLengthVVertex) && pathW.containsKey(shortestLengthVVertex)) {
+                    length = pathW.get(shortestLengthVVertex);
+                    ancestor = shortestLengthVVertex;
+                    return;
+                }
+                if (!pathW.containsKey(shortestLengthVVertex) && pathV.containsKey(shortestLengthVVertex)) {
+                    length = pathV.get(shortestLengthVVertex);
+                    ancestor = shortestLengthVVertex;
+                    return;
+                }
+                if (pathV.containsKey(shortestLengthVVertex) && pathW.containsKey(shortestLengthVVertex)) {
+                    length = pathV.get(shortestLengthVVertex) + pathW.get(shortestLengthVVertex);
+                    ancestor = shortestLengthVVertex;
+                    return;
+                }
+            }
+            if (shortestLengthW < shortestLengthV) {
+                if (!pathV.containsKey(shortestLengthWVertex) && pathW.containsKey(shortestLengthWVertex)) {
+                    length = pathW.get(shortestLengthWVertex);
+                    ancestor = shortestLengthWVertex;
+                    return;
+                }
+                if (!pathW.containsKey(shortestLengthWVertex) && pathV.containsKey(shortestLengthWVertex)) {
+                    length = pathV.get(shortestLengthWVertex);
+                    ancestor = shortestLengthWVertex;
+                    return;
+                }
+                if (pathV.containsKey(shortestLengthWVertex) && pathW.containsKey(shortestLengthWVertex)) {
+                    length = pathV.get(shortestLengthWVertex) + pathW.get(shortestLengthWVertex);
+                    ancestor = shortestLengthWVertex;
+                    return;
+                }
+            }
+            if (shortestLengthW > shortestLengthV) {
+                if (!pathV.containsKey(shortestLengthVVertex) && pathW.containsKey(shortestLengthVVertex)) {
+                    length = pathW.get(shortestLengthVVertex);
+                    ancestor = shortestLengthVVertex;
+                    return;
+                }
+                if (!pathW.containsKey(shortestLengthVVertex) && pathV.containsKey(shortestLengthVVertex)) {
+                    length = pathV.get(shortestLengthVVertex);
+                    ancestor = shortestLengthVVertex;
+                    return;
+                }
+                if (pathV.containsKey(shortestLengthVVertex) && pathW.containsKey(shortestLengthVVertex)) {
+                    length = pathV.get(shortestLengthVVertex) + pathW.get(shortestLengthVVertex);
+                    ancestor = shortestLengthVVertex;
+                    return;
+                }
+            }
+
+        }
 	}// end of method
 
 
