@@ -17,8 +17,8 @@ public class BreathFirstPath {
     private int shortestLengthWVertex;
     private int length;
     private int ancestor;
-    private boolean hasVHitAMarkedVertex;
-    private boolean hasWHitAMarkedVertex;
+    private boolean isPathVFound;
+    private boolean isPathWFound;
 
     /**
      * Performs BFS on two vertexes
@@ -39,8 +39,8 @@ public class BreathFirstPath {
         length = -1;
         ancestor = -1;
 
-        hasVHitAMarkedVertex = false;
-        hasWHitAMarkedVertex = false;
+        isPathVFound = false;
+        isPathWFound = false;
 	}
 
 	/**
@@ -89,8 +89,8 @@ public class BreathFirstPath {
         shortestLengthVVertex = Integer.MAX_VALUE;
         shortestLengthWVertex = Integer.MAX_VALUE;
 
-        hasVHitAMarkedVertex = false;
-        hasWHitAMarkedVertex = false;
+        isPathVFound = false;
+        isPathWFound = false;
 
 		Queue<Integer> queueV = new Queue<Integer>();
 		Queue<Integer> queueW = new Queue<Integer>();
@@ -108,230 +108,149 @@ public class BreathFirstPath {
 		}
 
 		while (!queueV.isEmpty() || !queueW.isEmpty()) {
-			if (this.ancestor == -1) {
-				if (!queueV.isEmpty()) {
-					int currentV = queueV.dequeue();
+            if (this.ancestor == -1) {
+                if (!queueV.isEmpty()) {
+                    int currentV = queueV.dequeue();
 
-					lengthV = pathV.get(currentV) + 1;
+                    lengthV = pathV.get(currentV) + 1;
 
-					for (int adjacent : graph.adj(currentV)) {
-						if (!marked.containsKey(adjacent)) {
-							queueV.enqueue(adjacent);
-							marked.put(new Integer(adjacent), true);
-							pathV.put(new Integer(adjacent), lengthV);
-						} else {
+                    if (graph.outdegree(currentV) == 0 && !isPathVFound) {
+                        shortestLengthV = lengthV - 1;
+                        shortestLengthVVertex = currentV;
+                        isPathVFound = true;
+                    }
 
+                    for (int adjacent : graph.adj(currentV)) {
+                        if (!marked.containsKey(adjacent)) {
+                            queueV.enqueue(adjacent);
+                            marked.put(new Integer(adjacent), true);
+                            pathV.put(new Integer(adjacent), lengthV);
+                        } else {
 
-                            hasVHitAMarkedVertex = true;
+                            if (pathW.containsKey(adjacent)) {
+                                isPathVFound = true;
 
-							if (lengthV < shortestLengthV)  {
-                                pathV.put(new Integer(adjacent), lengthV);
-								shortestLengthV = lengthV;
-                                shortestLengthVVertex = adjacent;
-							}
+                                // cycle found
+                                if (!pathV.containsKey(adjacent)) {
 
-                            else if (lengthV == shortestLengthV) {
-                                if (pathW.containsKey(adjacent)) {
-                                    if (pathW.get(adjacent) < shortestLengthW) {
+                                    if (lengthV < shortestLengthV) {
+                                        pathV.put(new Integer(adjacent), lengthV);
+                                        shortestLengthV = lengthV;
+                                        shortestLengthVVertex = adjacent;
+                                    } else if (lengthV == shortestLengthV) {
+                                        if (pathW.get(adjacent) < shortestLengthW) {
+                                            pathV.put(new Integer(adjacent), lengthV);
+                                            shortestLengthV = lengthV;
+                                            shortestLengthVVertex = adjacent;
+                                        }
+                                    } else if (pathW.get(adjacent) < pathW.get(shortestLengthWVertex)) {
                                         pathV.put(new Integer(adjacent), lengthV);
                                         shortestLengthV = lengthV;
                                         shortestLengthVVertex = adjacent;
                                     }
                                 }
-                            }
-                            else
-                            {
-                                if (!pathV.containsKey(adjacent)) {
-                                    pathV.put(new Integer(adjacent), lengthV);
+                                else {
+                                    shortestLengthV = pathV.get(adjacent);
+                                    shortestLengthVVertex = adjacent;
                                 }
-
-//                                if (pathW.get(adjacent) < pathV.get(adjacent)){
-//                                    shortestLengthVVertex = adjacent;
-//                                }
                             }
+                        }//end else
+                    }//end for
+                }// end if
 
-							if (queueV.isEmpty() && (hasWHitAMarkedVertex || queueW.isEmpty())) {
-													
-								try {									
-									
-									// w is the shortest common ancestor
-									if (pathW.containsKey(adjacent)) {
-                                        if (shortestLengthW < shortestLengthV) {
-                                            length = pathV.get(shortestLengthWVertex) + pathW.get(shortestLengthWVertex) ;
-                                            ancestor = shortestLengthWVertex;
-                                            return;
+
+                if (!queueW.isEmpty()) {
+                    int currentW = queueW.dequeue();
+
+                    lengthW = pathW.get(currentW) + 1;
+
+
+                    if (graph.outdegree(currentW) == 0 && !isPathWFound) {
+                        shortestLengthW = lengthW - 1;
+                        shortestLengthWVertex = currentW;
+                        isPathWFound = true;
+                    }
+
+                    for (int adjacent : graph.adj(currentW)) {
+                        if (!marked.containsKey(adjacent)) {
+                            queueW.enqueue(adjacent);
+                            marked.put(new Integer(adjacent), true);
+                            pathW.put(new Integer(adjacent), lengthW);
+                        } else {
+
+                            if (pathV.containsKey(adjacent)) {
+                                isPathWFound = true;
+
+                                if (!pathW.containsKey(adjacent)) {
+
+                                    if (lengthW < shortestLengthW) {
+                                        pathW.put(new Integer(adjacent), lengthW);
+                                        shortestLengthW = lengthW;
+                                        shortestLengthWVertex = adjacent;
+                                    } else if (lengthW == shortestLengthW) {
+                                        if (pathV.get(adjacent) < shortestLengthV) {
+                                            pathW.put(new Integer(adjacent), lengthW);
+                                            shortestLengthW = lengthW;
+                                            shortestLengthWVertex = adjacent;
                                         }
-                                        if (shortestLengthV < shortestLengthW) {
-                                            length = pathV.get(shortestLengthVVertex) + pathW.get(shortestLengthVVertex);
-                                            ancestor = shortestLengthVVertex;
-                                            return;
-                                        }
-										return;
-									}
-								}
-								catch (Exception e) {
-									// do nothing
-								}
-							}// end if
-						}//end else
-					}//end for
-				}// end if
-
-				if (!queueW.isEmpty()) {
-					int currentW = queueW.dequeue();
-
-					lengthW = pathW.get(currentW) + 1;
-
-					for (int adjacent : graph.adj(currentW)) {
-						if (!marked.containsKey(adjacent)) {
-							queueW.enqueue(adjacent);
-							marked.put(new Integer(adjacent), true);
-							pathW.put(new Integer(adjacent), lengthW);
-															
-						} else {
-
-                            hasWHitAMarkedVertex = true;
-
-							if (lengthW < shortestLengthW)  {
-                                pathW.put(new Integer(adjacent), lengthW);
-                                shortestLengthW = lengthW;
-                                shortestLengthWVertex = adjacent;
-							}
-
-                            else if (lengthW == shortestLengthW) {
-                                if (pathV.containsKey(adjacent)) {
-                                    if (pathV.get(adjacent) < shortestLengthV) {
+                                    } else if (pathV.get(adjacent) < pathV.get(shortestLengthVVertex)) {
                                         pathW.put(new Integer(adjacent), lengthW);
                                         shortestLengthW = lengthW;
                                         shortestLengthWVertex = adjacent;
                                     }
                                 }
-                            }
 
-
-                            else
-                            {
-                                if (!pathW.containsKey(adjacent)) {
-                                    pathW.put(new Integer(adjacent), lengthW);
+                                else {
+                                    shortestLengthW = pathW.get(adjacent);
+                                    shortestLengthWVertex = adjacent;
                                 }
-
-//                                if (pathW.get(adjacent) < shortestLengthW) {
-//                                    shortestLengthWVertex = adjacent;
-//                                    shortestLengthW = lengthW;
-//                                }
-
-//                                if (pathV.get(adjacent) < pathW.get(adjacent)){
-//                                    shortestLengthWVertex = adjacent;
-//                                }
                             }
+                        }//end else
+                    }//end for
+                }// end if
+            }// end if
+        }// end while
 
-							if (queueW.isEmpty() && (hasVHitAMarkedVertex || queueV.isEmpty())) {
-													
-								try {
+        if (isPathWFound && isPathVFound) {
+            int optionV = evaluateOption(shortestLengthVVertex);
+            int optionW = evaluateOption(shortestLengthWVertex);
 
-                                    // w is the shortest common ancestor
-                                    if (pathV.containsKey(adjacent)) {
-                                        if (shortestLengthW < shortestLengthV) {
-                                            length = pathW.get(shortestLengthWVertex) + pathV.get(shortestLengthWVertex);
-                                            ancestor = shortestLengthWVertex;
-                                            return;
-                                        }
-                                        if (shortestLengthV < shortestLengthW) {
-                                            length = pathW.get(shortestLengthVVertex) + pathV.get(shortestLengthVVertex);
-                                            ancestor = shortestLengthVVertex;
-                                            return;
-                                        }
-                                        else {
-                                            length = pathW.get(adjacent) + pathV.get(adjacent);
-                                            ancestor = adjacent;
-                                        }
-
-                                        return;
-                                    }
-								}
-								catch (Exception e) {
-									// do nothing
-								}
-								
-							}// end if
-						}//end else
-					}//end for
-				}// end if
-			}//end if
-			else break;
-		} // end of while
-
-        if (hasVHitAMarkedVertex || hasWHitAMarkedVertex) {
-            if (!pathV.containsKey(shortestLengthWVertex) && pathW.containsKey(shortestLengthWVertex)) {
-                length = pathW.get(shortestLengthWVertex);
+            if (optionV < optionW) {
+                length = optionV;
+                ancestor = shortestLengthVVertex;
+                return;
+            }
+            if (optionW < optionV) {
+                length = optionW;
                 ancestor = shortestLengthWVertex;
                 return;
             }
-            if (!pathW.containsKey(shortestLengthWVertex) && pathV.containsKey(shortestLengthWVertex)) {
-                length = pathV.get(shortestLengthWVertex);
-                ancestor = shortestLengthWVertex;
+            // optionV = optionW
+            if (optionV != Integer.MAX_VALUE || optionW != Integer.MAX_VALUE) {
+                length = optionV; // choosing an arbitrary option
+                ancestor = shortestLengthVVertex; // choosing an arbitrary option
                 return;
             }
-            if (pathV.containsKey(shortestLengthWVertex) && pathW.containsKey(shortestLengthWVertex)) {
-                length = pathV.get(shortestLengthWVertex) + pathW.get(shortestLengthWVertex);
-                ancestor = shortestLengthWVertex;
-                return;
-            }
-            if (shortestLengthV != Integer.MAX_VALUE && shortestLengthW == Integer.MAX_VALUE) {
-                if (!pathV.containsKey(shortestLengthVVertex) && pathW.containsKey(shortestLengthVVertex)) {
-                    length = pathW.get(shortestLengthVVertex);
-                    ancestor = shortestLengthVVertex;
-                    return;
-                }
-                if (!pathW.containsKey(shortestLengthVVertex) && pathV.containsKey(shortestLengthVVertex)) {
-                    length = pathV.get(shortestLengthVVertex);
-                    ancestor = shortestLengthVVertex;
-                    return;
-                }
-                if (pathV.containsKey(shortestLengthVVertex) && pathW.containsKey(shortestLengthVVertex)) {
-                    length = pathV.get(shortestLengthVVertex) + pathW.get(shortestLengthVVertex);
-                    ancestor = shortestLengthVVertex;
-                    return;
-                }
-            }
-            if (shortestLengthW < shortestLengthV) {
-                if (!pathV.containsKey(shortestLengthWVertex) && pathW.containsKey(shortestLengthWVertex)) {
-                    length = pathW.get(shortestLengthWVertex);
-                    ancestor = shortestLengthWVertex;
-                    return;
-                }
-                if (!pathW.containsKey(shortestLengthWVertex) && pathV.containsKey(shortestLengthWVertex)) {
-                    length = pathV.get(shortestLengthWVertex);
-                    ancestor = shortestLengthWVertex;
-                    return;
-                }
-                if (pathV.containsKey(shortestLengthWVertex) && pathW.containsKey(shortestLengthWVertex)) {
-                    length = pathV.get(shortestLengthWVertex) + pathW.get(shortestLengthWVertex);
-                    ancestor = shortestLengthWVertex;
-                    return;
-                }
-            }
-            if (shortestLengthW > shortestLengthV) {
-                if (!pathV.containsKey(shortestLengthVVertex) && pathW.containsKey(shortestLengthVVertex)) {
-                    length = pathW.get(shortestLengthVVertex);
-                    ancestor = shortestLengthVVertex;
-                    return;
-                }
-                if (!pathW.containsKey(shortestLengthVVertex) && pathV.containsKey(shortestLengthVVertex)) {
-                    length = pathV.get(shortestLengthVVertex);
-                    ancestor = shortestLengthVVertex;
-                    return;
-                }
-                if (pathV.containsKey(shortestLengthVVertex) && pathW.containsKey(shortestLengthVVertex)) {
-                    length = pathV.get(shortestLengthVVertex) + pathW.get(shortestLengthVVertex);
-                    ancestor = shortestLengthVVertex;
-                    return;
-                }
-            }
+        }// end if
 
-        }
 	}// end of method
 
+
+    private int evaluateOption(int shortestLengthX) {
+        int option = 0;
+
+        if (pathV.containsKey(shortestLengthX))
+            option += pathV.get(shortestLengthX);
+        else
+            return Integer.MAX_VALUE;
+
+        if (pathW.containsKey(shortestLengthX))
+            option += pathW.get(shortestLengthX);
+        else
+            return Integer.MAX_VALUE;
+
+        return option;
+    }
 
     public int getLength() {
         return length;

@@ -93,11 +93,11 @@ public class SAP {
 	 * @param args
 	 */
 	public static void main(String args[]) {
-		In in = new In("/resources/digraph1.txt");
+		In in = new In("/resources/digraph3.txt");
 	    Digraph G = new Digraph(in);
 	    SAP sap = new SAP(G);
-        int v = 3;
-        int w = 8;
+        int v = 14;
+        int w = 11;
         int length   = sap.length(v, w);
         int ancestor = sap.ancestor(v, w);
         StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
