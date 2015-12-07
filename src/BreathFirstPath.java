@@ -170,9 +170,25 @@ public class BreathFirstPath {
                                     else {
                                         pathV.put(new Integer(adjacent), lengthV);
                                         if (pathW.get(adjacent) == 0) {
-                                            if (pathW.containsKey(currentV)) {
-                                                shortestLengthW = pathW.get(adjacent);
-                                                shortestLengthWVertex = adjacent;
+
+                                            if (shortestLengthV != Integer.MAX_VALUE) {
+
+                                                int possibleNewShortestVVertex = adjacent;
+
+                                                int possibleNewOptionV = evaluateOption(possibleNewShortestVVertex);
+                                                int currentOptionV = evaluateOption(shortestLengthWVertex);
+
+                                                if (possibleNewOptionV < currentOptionV) {
+                                                    shortestLengthV = pathV.get(adjacent);
+                                                    shortestLengthVVertex = adjacent;
+                                                    isPathVFound = true;
+                                                }
+                                            }
+
+                                            else {
+                                                shortestLengthV = pathV.get(adjacent);
+                                                shortestLengthVVertex = adjacent;
+                                                isPathVFound = true;
                                             }
                                         }
                                     }
@@ -253,9 +269,25 @@ public class BreathFirstPath {
                                     else {
                                         pathW.put(new Integer(adjacent), lengthW);
                                         if (pathV.get(adjacent) == 0) {
-                                            if (pathV.containsKey(currentW)) {
-                                                shortestLengthV = pathV.get(adjacent);
-                                                shortestLengthVVertex = adjacent;
+
+                                            if (shortestLengthW != Integer.MAX_VALUE) {
+
+                                                int possibleNewShortestWVertex = adjacent;
+
+                                                int possibleNewOptionW = evaluateOption(possibleNewShortestWVertex);
+                                                int currentOptionW = evaluateOption(shortestLengthWVertex);
+
+                                                if (possibleNewOptionW < currentOptionW) {
+                                                    shortestLengthW = pathW.get(adjacent);
+                                                    shortestLengthWVertex = adjacent;
+                                                    isPathWFound = true;
+                                                }
+                                            }
+
+                                            else {
+                                                shortestLengthW = pathW.get(adjacent);
+                                                shortestLengthWVertex = adjacent;
+                                                isPathWFound = true;
                                             }
                                         }
                                     }
