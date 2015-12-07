@@ -23,13 +23,15 @@ public class BreathFirstPath {
     private final Queue<Integer> queueW;
     private int optionV;
     private int optionW;
+    private int possibleNewShortestVVertex;
+    private int possibleNewShortestWVertex;
 
     /**
      * Performs BFS on two vertexes
      * @param graph Digraph representing WordNet
      */
 	public BreathFirstPath(Digraph graph) {
-		this.graph = graph;
+		this.graph = new Digraph(graph);
 		shortestLengthW = Integer.MAX_VALUE;
 		shortestLengthV = Integer.MAX_VALUE;
         shortestLengthVVertex = Integer.MAX_VALUE;
@@ -53,6 +55,9 @@ public class BreathFirstPath {
 
         optionV = 0;
         optionW = 0;
+
+        possibleNewShortestVVertex = 0;
+        possibleNewShortestWVertex = 0;
 	}
 
 	/**
@@ -108,6 +113,9 @@ public class BreathFirstPath {
         optionW = 0;
 
 
+        possibleNewShortestVVertex = 0;
+        possibleNewShortestWVertex = 0;
+
         // Emptying queues
         while (!queueV.isEmpty()) {
             queueV.dequeue();
@@ -131,6 +139,10 @@ public class BreathFirstPath {
 		}
 
 		while (!queueV.isEmpty() || !queueW.isEmpty()) {
+
+            possibleNewShortestVVertex = 0;
+            possibleNewShortestWVertex = 0;
+
                 if (!queueV.isEmpty()) {
                     int currentV = queueV.dequeue();
 

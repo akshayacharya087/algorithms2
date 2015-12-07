@@ -47,7 +47,7 @@ public class WordNet {
 				}
 			}
 			
-			synsetsMap.put(new Integer(synsetId), elements[1].replace(" ", ","));
+			synsetsMap.put(new Integer(synsetId), elements[1]);
 			
 			
 			synsetCounter++;
