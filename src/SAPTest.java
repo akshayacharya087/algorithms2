@@ -117,6 +117,59 @@ public class SAPTest {
     }
 
     @Test
+    public void diagram_3_Test_4() {
+        In in = new In("/resources/digraph3.txt");
+        Digraph G = new Digraph(in);
+        SAP sap = new SAP(G);
+        int v = 13;
+        int w = 9;
+        int length   = sap.length(v, w);
+        int ancestor = sap.ancestor(v, w);
+        assertEquals(5, length);
+        assertEquals(11, ancestor);
+    }
+
+    @Test
+    public void diagram_3_Test_5() {
+        In in = new In("/resources/digraph3.txt");
+        Digraph G = new Digraph(in);
+        SAP sap = new SAP(G);
+        int v = 10;
+        int w = 14;
+        int length   = sap.length(v, w);
+        int ancestor = sap.ancestor(v, w);
+        assertEquals(3, length);
+        assertEquals(11, ancestor);
+    }
+
+    @Test
+    public void diagram_3_Test_6() {
+        In in = new In("/resources/digraph3.txt");
+        Digraph G = new Digraph(in);
+        SAP sap = new SAP(G);
+        int v = 8;
+        int w = 13;
+        int length   = sap.length(v, w);
+        int ancestor = sap.ancestor(v, w);
+        assertEquals(5, length);
+        assertEquals(8, ancestor);
+    }
+
+    @Test
+    public void diagram_3_Test_7() {
+        In in = new In("/resources/digraph3.txt");
+        Digraph G = new Digraph(in);
+        SAP sap = new SAP(G);
+        int v = 2;
+        int w = 3;
+        int length   = sap.length(v, w);
+        int ancestor = sap.ancestor(v, w);
+        assertEquals(1, length);
+        assertEquals(3, ancestor);
+    }
+
+
+    @Test
     public void diagram_4_Test_1() {
         In in = new In("/resources/digraph4.txt");
         Digraph G = new Digraph(in);
@@ -153,6 +206,19 @@ public class SAPTest {
         int ancestor = sap.ancestor(v, w);
         assertEquals(7, length);
         assertEquals(21, ancestor);
+    }
+
+    @Test
+    public void diagram_5_Test_2() {
+        In in = new In("/resources/digraph5.txt");
+        Digraph G = new Digraph(in);
+        SAP sap = new SAP(G);
+        int v = 19;
+        int w = 8;
+        int length   = sap.length(v, w);
+        int ancestor = sap.ancestor(v, w);
+        assertEquals(5, length);
+        assertEquals(9, ancestor);
     }
 
 

@@ -19,6 +19,10 @@ public class BreathFirstPath {
     private int ancestor;
     private boolean isPathVFound;
     private boolean isPathWFound;
+    private final Queue<Integer> queueV;
+    private final Queue<Integer> queueW;
+    private int optionV;
+    private int optionW;
 
     /**
      * Performs BFS on two vertexes
@@ -28,6 +32,11 @@ public class BreathFirstPath {
 		this.graph = graph;
 		shortestLengthW = Integer.MAX_VALUE;
 		shortestLengthV = Integer.MAX_VALUE;
+        shortestLengthVVertex = Integer.MAX_VALUE;
+        shortestLengthWVertex = Integer.MAX_VALUE;
+
+        queueV = new Queue<>();
+        queueW = new Queue<>();
 
         marked = new HashMap<>();
         pathV = new HashMap<>();
@@ -41,6 +50,9 @@ public class BreathFirstPath {
 
         isPathVFound = false;
         isPathWFound = false;
+
+        optionV = 0;
+        optionW = 0;
 	}
 
 	/**
@@ -92,9 +104,20 @@ public class BreathFirstPath {
         isPathVFound = false;
         isPathWFound = false;
 
-		Queue<Integer> queueV = new Queue<Integer>();
-		Queue<Integer> queueW = new Queue<Integer>();
+        optionV = 0;
+        optionW = 0;
 
+
+        // Emptying queues
+        while (!queueV.isEmpty()) {
+            queueV.dequeue();
+        }
+
+        while (!queueW.isEmpty()) {
+            queueW.dequeue();
+        }
+
+        // Filling the queues
 		for (int vertex : v) {
 			marked.put(new Integer(vertex), true);
 			pathV.put(new Integer(vertex), 0);
@@ -108,7 +131,6 @@ public class BreathFirstPath {
 		}
 
 		while (!queueV.isEmpty() || !queueW.isEmpty()) {
-            if (this.ancestor == -1) {
                 if (!queueV.isEmpty()) {
                     int currentV = queueV.dequeue();
 
@@ -127,33 +149,65 @@ public class BreathFirstPath {
                             pathV.put(new Integer(adjacent), lengthV);
                         } else {
 
-                            if (pathW.containsKey(adjacent)) {
-                                isPathVFound = true;
+                            // cycle found
+                            if (!pathV.containsKey(adjacent)) {
 
-                                // cycle found
-                                if (!pathV.containsKey(adjacent)) {
+                                if (pathW.containsKey(adjacent)) {
+                                    isPathVFound = true;
 
                                     if (lengthV < shortestLengthV) {
                                         pathV.put(new Integer(adjacent), lengthV);
                                         shortestLengthV = lengthV;
                                         shortestLengthVVertex = adjacent;
-                                    } else if (lengthV == shortestLengthV) {
+                                    }
+                                    else if (lengthV == shortestLengthV) {
                                         if (pathW.get(adjacent) < shortestLengthW) {
                                             pathV.put(new Integer(adjacent), lengthV);
                                             shortestLengthV = lengthV;
                                             shortestLengthVVertex = adjacent;
                                         }
-                                    } else if (pathW.get(adjacent) < pathW.get(shortestLengthWVertex)) {
+                                    }
+                                    else {
                                         pathV.put(new Integer(adjacent), lengthV);
-                                        shortestLengthV = lengthV;
-                                        shortestLengthVVertex = adjacent;
+                                        if (pathW.get(adjacent) == 0) {
+                                            if (pathW.containsKey(currentV)) {
+                                                shortestLengthW = pathW.get(adjacent);
+                                                shortestLengthWVertex = adjacent;
+                                            }
+                                        }
                                     }
                                 }
-                                else {
-                                    shortestLengthV = pathV.get(adjacent);
-                                    shortestLengthVVertex = adjacent;
+                                if (!isPathWFound) {
+                                    pathV.put(new Integer(adjacent), lengthV);
+                                    queueV.enqueue(adjacent);
                                 }
                             }
+
+                            else {
+                                if (pathV.get(adjacent) < shortestLengthV) {
+
+                                    if (shortestLengthV != Integer.MAX_VALUE) {
+
+                                        int possibleNewShortestVVertex = adjacent;
+
+                                        int possibleNewOptionV = evaluateOption(possibleNewShortestVVertex);
+                                        int currentOptionV = evaluateOption(shortestLengthWVertex);
+
+                                        if (possibleNewOptionV < currentOptionV) {
+                                            shortestLengthV = pathV.get(adjacent);
+                                            shortestLengthVVertex = adjacent;
+                                            isPathVFound = true;
+                                        }
+                                    }
+
+                                    else {
+                                        shortestLengthV = pathV.get(adjacent);
+                                        shortestLengthVVertex = adjacent;
+                                        isPathVFound = true;
+                                    }
+                                }
+                            }
+
                         }//end else
                     }//end for
                 }// end if
@@ -178,42 +232,73 @@ public class BreathFirstPath {
                             pathW.put(new Integer(adjacent), lengthW);
                         } else {
 
-                            if (pathV.containsKey(adjacent)) {
-                                isPathWFound = true;
+                            // cycle found
+                            if (!pathW.containsKey(adjacent)) {
 
-                                if (!pathW.containsKey(adjacent)) {
+                                if (pathV.containsKey(adjacent)) {
+                                    isPathWFound = true;
 
                                     if (lengthW < shortestLengthW) {
                                         pathW.put(new Integer(adjacent), lengthW);
                                         shortestLengthW = lengthW;
                                         shortestLengthWVertex = adjacent;
-                                    } else if (lengthW == shortestLengthW) {
+                                    }
+                                    else if (lengthW == shortestLengthW) {
                                         if (pathV.get(adjacent) < shortestLengthV) {
                                             pathW.put(new Integer(adjacent), lengthW);
                                             shortestLengthW = lengthW;
                                             shortestLengthWVertex = adjacent;
                                         }
-                                    } else if (pathV.get(adjacent) < pathV.get(shortestLengthVVertex)) {
-                                        pathW.put(new Integer(adjacent), lengthW);
-                                        shortestLengthW = lengthW;
-                                        shortestLengthWVertex = adjacent;
                                     }
-                                }
+                                    else {
+                                        pathW.put(new Integer(adjacent), lengthW);
+                                        if (pathV.get(adjacent) == 0) {
+                                            if (pathV.containsKey(currentW)) {
+                                                shortestLengthV = pathV.get(adjacent);
+                                                shortestLengthVVertex = adjacent;
+                                            }
+                                        }
+                                    }
 
-                                else {
-                                    shortestLengthW = pathW.get(adjacent);
-                                    shortestLengthWVertex = adjacent;
+                                }
+                                if (!isPathVFound) {
+                                    pathW.put(new Integer(adjacent), lengthW);
+                                    queueW.enqueue(adjacent);
+                                }
+                            }
+                            else {
+                                if (pathW.get(adjacent) < shortestLengthW) {
+
+                                    // if shortest length in pathW has been already found, test which one is better
+                                    if (shortestLengthW != Integer.MAX_VALUE) {
+
+                                        int possibleNewShortestWVertex = adjacent;
+
+                                        int possibleNewOptionW = evaluateOption(possibleNewShortestWVertex);
+                                        int currentOptionW = evaluateOption(shortestLengthWVertex);
+
+                                        if (possibleNewOptionW < currentOptionW) {
+                                            shortestLengthW = pathW.get(adjacent);
+                                            shortestLengthWVertex = adjacent;
+                                            isPathWFound = true;
+                                        }
+                                    }
+
+                                    else {
+                                        shortestLengthW = pathW.get(adjacent);
+                                        shortestLengthWVertex = adjacent;
+                                        isPathWFound = true;
+                                    }
                                 }
                             }
                         }//end else
                     }//end for
                 }// end if
-            }// end if
         }// end while
 
         if (isPathWFound && isPathVFound) {
-            int optionV = evaluateOption(shortestLengthVVertex);
-            int optionW = evaluateOption(shortestLengthWVertex);
+            optionV = evaluateOption(shortestLengthVVertex);
+            optionW = evaluateOption(shortestLengthWVertex);
 
             if (optionV < optionW) {
                 length = optionV;
