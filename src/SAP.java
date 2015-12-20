@@ -14,7 +14,7 @@ public class SAP {
 	 * @param g
 	 */
 	public SAP(Digraph g) {
-		digraph = g;
+		digraph = new Digraph(g);
 		breathFirstPath = new BreathFirstPath(g);
 	}
 	
