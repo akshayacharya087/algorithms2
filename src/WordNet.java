@@ -1,152 +1,180 @@
-import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+import edu.princeton.cs.algs4.Topological;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class WordNet {
 
-	private final HashMap<String, ArrayList<Integer>> nounsMap;	
-	private final HashMap<Integer, String> synsetsMap;
-
-	private final Digraph wordNet;	
+	private final RedBlackBST<String, List<Synonym>> symbolTable = new RedBlackBST<>();
 	private final SAP sap;
-	/**
-	 * Constructor takes the name of the two input files
-	 * 
-	 * @param synsets
-	 * @param hypernyms
-	 */
+	private final Synonym[] synonyms;
+
+	private class Synonym {
+		int id;
+		String[] synset;
+
+		Synonym(int id, String[] synset) {
+			this.id = id;
+			this.synset = synset;
+		}
+	}
+
+	// constructor takes the name of the two input files
 	public WordNet(String synsets, String hypernyms) {
-		if (synsets == null || hypernyms == null) throw new NullPointerException();
-		
-		In in = new In(synsets);
-			
-		nounsMap = new HashMap<>();
-		synsetsMap = new HashMap<>();
-		int synsetCounter = 0;
-		
-		// Filling the synsets, and nouns
-		while (in.hasNextLine()) {
-			String[] elements = in.readLine().split(",");
-			int synsetId = Integer.parseInt(elements[0]);
-			String[] nouns = elements[1].split(" ");
-			
-			// Filling nounsMap
-			for (String noun : nouns) {
-				if (nounsMap.containsKey(noun)) {
-					nounsMap.get(noun).add(synsetId);
-				}
-				else {
-					ArrayList<Integer> synsetsIds = new ArrayList<>();
-					synsetsIds.add(synsetId);
-					nounsMap.put(noun, synsetsIds);
-				}
-			}
-			
-			synsetsMap.put(new Integer(synsetId), elements[1]);
-			
-			
-			synsetCounter++;
+		if ((synsets == null) || (hypernyms == null)) {
+			throw new IllegalArgumentException();
 		}
-		
-		// Creating the digraph
-		wordNet = new Digraph(synsetCounter);
-		
-		in = new In(hypernyms);
-		
-		while(in.hasNextLine()) {
-			String[] elements = in.readLine().split(",");
-			for (int i = 1; i < elements.length; i++) {
-				wordNet.addEdge(Integer.parseInt(elements[0]), Integer.parseInt(elements[i]));
+
+		In synsetsIn = new In(synsets);
+		int maxId = -1;
+		while (!synsetsIn.isEmpty()) {
+			String line = synsetsIn.readLine();
+			String[] values = line.split(",");
+			String[] words = values[1].split(" ");
+			maxId = Integer.parseInt(values[0]);
+			Synonym syn = new Synonym(maxId, words);
+			for (String word : words) {
+				List<Synonym> lookup = symbolTable.get(word);
+				if (lookup == null) {
+					lookup = new LinkedList<>();
+				}
+				lookup.add(syn);
+				symbolTable.put(word, lookup);
 			}
-			
 		}
-		
-		// Creating the SAP object
-		sap = new SAP(wordNet);		
+
+		synonyms = new Synonym[maxId + 1];
+		for (String key : symbolTable.keys()) {
+			List<Synonym> symbols = symbolTable.get(key);
+			for (Synonym s : symbols) {
+				synonyms[s.id] = s;
+			}
+		}
+
+		Digraph graph = new Digraph(maxId + 1);
+		In hypernymsIn = new In(hypernyms);
+		while (!hypernymsIn.isEmpty()) {
+			String line = hypernymsIn.readLine();
+			String[] values = line.split(",");
+			int n = Integer.parseInt(values[0]);
+			for (int i = 1; i < values.length; i++) {
+				int v = Integer.parseInt(values[i]);
+				graph.addEdge(n, v);
+			}
+		}
+		Topological traversal = new Topological(graph);
+		if (!traversal.hasOrder()) {
+			throw new IllegalArgumentException("Graph has a cycle");
+		}
+		int root = -1;
+		for (int v = 0; v < graph.V(); v++) {
+			if (graph.outdegree(v) == 0) {
+				if (root >= 0) {
+					throw new IllegalArgumentException("Graph has multiple roots");
+				}
+				root = v;
+			}
+		}
+		sap = new SAP(graph);
 	}
 
-	/**
-	 * Returns all WordNet nouns
-	 * 
-	 * @return
-	 */
+	// returns all WordNet nouns
 	public Iterable<String> nouns() {
-		return nounsMap.keySet();
+		return symbolTable.keys();
 	}
 
-	/**
-	 * Is the word a WordNet noun?
-	 * 
-	 * @param word
-	 * @return
-	 */
-	public boolean isNoun(String word) {		
-		checkInput(word);
-		return (nounsMap.containsKey(word));
+	private int count() {
+		return symbolTable.size();
 	}
 
-	/**
-	 *  Distance between nounA and nounB (defined below)
-	 * @param nounA
-	 * @param nounB
-	 * @return
-	 */
+	// is the word a WordNet noun?
+	public boolean isNoun(String word) {
+		if (word == null) {
+			throw new IllegalArgumentException();
+		}
+		return symbolTable.contains(word);
+	}
+
+	private List<Integer> matchingKeys(String word) {
+		List<Integer> keys = new LinkedList<>();
+		for (Synonym s : symbolTable.get(word)) {
+			keys.add(s.id);
+		}
+		return keys;
+	}
+
+	// distance between nounA and nounB (defined below)
 	public int distance(String nounA, String nounB) {
-		checkInputs(nounA, nounB);
-		return sap.length(nounsMap.get(nounA), nounsMap.get(nounB));
+		if ((nounA == null) || (nounB == null)) {
+			throw new IllegalArgumentException();
+		}
+		if (!isNoun(nounA) || !(isNoun(nounB))) {
+			throw new IllegalArgumentException("Arguments must be nouns");
+		}
+
+		return sap.length(matchingKeys(nounA), matchingKeys(nounB));
 	}
-	
-	
-	/**
-	 * A synset (second field of synsets.txt) that is the common ancestor of
-	 * nounA and nounB in a shortest ancestral path (defined below)
-	 * 
-	 * @param nounA
-	 * @param nounB
-	 * @return
-	 */
+
+	// a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
+	// in a shortest ancestral path (defined below)
 	public String sap(String nounA, String nounB) {
-		checkInputs(nounA, nounB);
-		int ancestor = sap.ancestor(nounsMap.get(nounA), nounsMap.get(nounB));
-		return synsetsMap.get(ancestor);
+		if ((nounA == null) || (nounB == null)) {
+			throw new IllegalArgumentException();
+		}
+		if (!isNoun(nounA) || !(isNoun(nounB))) {
+			throw new IllegalArgumentException("Arguments must be nouns");
+		}
+
+		int ancestor = sap.ancestor(matchingKeys(nounA), matchingKeys(nounB));
+		if (ancestor < 0) {
+			return null;
+		}
+		return String.join(" ", synonyms[ancestor].synset);
 	}
 
-	/**
-	 * Checks that parameters are not null, and that they belong to a rooted DAG.
-	 * @param nounA
-	 * @param nounB
-	 */
-	private void checkInputs(String nounA, String nounB) {
-		if (nounA == null || nounB == null) throw new NullPointerException();
-		
-		if (!nounsMap.containsKey(nounA) || !nounsMap.containsKey(nounB)) throw new IllegalArgumentException();
-		
-	}
-	
-	/**
-	 * Checks that the String is not null
-	 * @param word
-	 */
-	private void checkInput(String word) {
-		if (word == null) throw new NullPointerException();
+	private List<Synonym> lookupNoun(String word) {
+		return symbolTable.get(word);
 	}
 
-	/**
-	 * do unit testing of this class
-	 * 
-	 * @param args
-	 */
+	private static String readSynonym(WordNet net) {
+		String word = StdIn.readString();
+		if (word.isEmpty()) {
+			return null;
+		}
+		while (!net.isNoun(word)) {
+			StdOut.printf("%s is not a noun\n", word);
+			word = StdIn.readString();
+		}
+		for (Synonym synonym : net.lookupNoun(word)) {
+			StdOut.printf("%d - synonyms: %s\n", synonym.id, String.join(", ", synonym.synset));
+		}
+		return word;
+	}
+
+	// do unit testing of this class
 	public static void main(String[] args) {
-		WordNet wordNet = new WordNet("/resources/synsets.txt", "/resources/hypernyms.txt");
-		Scanner in = new Scanner(System.in);
-		String word1 = in.nextLine();
-		String word2 = in.nextLine();
-		System.out.println("The sap of " + word1 + " and " + word2 + " is " + wordNet.sap(word1, word2));
-		System.out.println("Successfully finished");
+		if ((args == null) || (args.length < 2)) {
+			throw new IllegalArgumentException();
+		}
+		WordNet net = new WordNet(args[0], args[1]);
+		StdOut.printf("Found %s nouns\n", net.count());
+		while (!StdIn.isEmpty()) {
+			String wordA = readSynonym(net);
+			if (wordA == null) {
+				return;
+			}
+			String wordB = readSynonym(net);
+			if (wordB == null) {
+				return;
+			}
+			int length = net.distance(wordA, wordB);
+			String ancestor = net.sap(wordA, wordB);
+			StdOut.printf("length = %d, ancestor = %s\n", length, ancestor);
+		}
 	}
 }
