@@ -4,9 +4,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by yeremy on 12/5/15.
- */
 public class SAPTest {
 
     @Test
