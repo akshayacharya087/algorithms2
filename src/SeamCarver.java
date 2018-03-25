@@ -1,14 +1,13 @@
 import edu.princeton.cs.algs4.Picture;
 
-import java.util.Collections;
 import java.util.Stack;
-import java.util.stream.Collectors;
 
 public class SeamCarver
 {
     private Picture picture;
     private double[][] energies;
     private double[][] cumulativeEnergies;
+    private boolean isPictureTransposed;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture)
@@ -16,15 +15,14 @@ public class SeamCarver
         this.picture = picture;
         this.energies = new double[width()][height()];
         this.cumulativeEnergies = new double[width()][height()];
+        isPictureTransposed = false;
 
-        for (int x = 0; x < width(); x++)
-        {
-            for (int y = 0; y < height(); y++)
-            {
-                energies[x][y] = energy(x, y);
-            }
-        }
+        calculateEnergies();
+        initializeCumulativeEnergies();
+    }
 
+    private void initializeCumulativeEnergies()
+    {
         for (int x = 0; x < width(); x++)
         {
             for (int y = 0; y < height(); y++)
@@ -41,22 +39,39 @@ public class SeamCarver
         }
     }
 
+    private void calculateEnergies()
+    {
+        for (int x = 0; x < width(); x++)
+        {
+            for (int y = 0; y < height(); y++)
+            {
+                energies[x][y] = energy(x, y);
+            }
+        }
+    }
+
     // current picture
     public Picture picture()
     {
-        return null;
+        return this.picture;
     }
 
     // width of current picture
     public int width()
     {
-        return this.picture.width();
+        if (isPictureTransposed)
+            return picture.height();
+        else
+            return picture.width();
     }
 
     // height of current picture
     public int height()
     {
-        return this.picture.height();
+        if (isPictureTransposed)
+            return picture.width();
+        else
+            return picture.height();
     }
 
     // energy of pixel at column x and row y
@@ -119,7 +134,35 @@ public class SeamCarver
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam()
     {
-        return null;
+        if (!isPictureTransposed)
+            transposePicture();
+
+        return findVerticalSeam();
+    }
+
+    private void transposePicture()
+    {
+        // Transpose energies
+        double[][] tempArray = new double[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.energies[x], 0, tempArray[x], 0, energies[x].length);
+        }
+
+        this.energies = new double[height()][width()];
+        for (int y = 0; y < height(); y++)
+        {
+            for (int x = 0; x < width(); x++)
+            {
+                this.energies[y][x] = tempArray[x][y];
+            }
+        }
+
+        this.isPictureTransposed = true;
+
+        // Transpose cumuliativeEnergies
+        this.cumulativeEnergies = new double[width()][height()];
+        initializeCumulativeEnergies();
     }
 
     // sequence of indices for vertical seam
@@ -194,6 +237,10 @@ public class SeamCarver
         }
 
         return shortestPathArray;
+    }
+
+    private void transposePictureBack()
+    {
     }
 
     private void relax(int destX, int destY, int sourceX, int sourceY)
