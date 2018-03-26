@@ -78,6 +78,28 @@ public class SeamCarverTest
     }
 
     @Test
+    public void testFindHorizontalSeam12x10()
+    {
+        File file = new File(getClass().getResource("12x10.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int [] horizontalSeam = seamCarver.findHorizontalSeam();
+        assertNotNull(horizontalSeam);
+        assertEquals(7, horizontalSeam[0]);
+        assertEquals(8, horizontalSeam[1]);
+        assertEquals(7, horizontalSeam[2]);
+        assertEquals(8, horizontalSeam[3]);
+        assertEquals(7, horizontalSeam[4]);
+        assertEquals(6, horizontalSeam[5]);
+        assertEquals(5, horizontalSeam[6]);
+        assertEquals(6, horizontalSeam[7]);
+        assertEquals(6, horizontalSeam[8]);
+        assertEquals(5, horizontalSeam[9]);
+        assertEquals(4, horizontalSeam[10]);
+        assertEquals(3, horizontalSeam[11]);
+    }
+
+    @Test
     public void testFindHorizontalSeam3x4()
     {
         File file = new File(getClass().getResource("3x4.png").getFile());
@@ -107,7 +129,7 @@ public class SeamCarverTest
     }
 
     @Test
-    public void testFindVerticalAndHorizontalSeam()
+    public void testFindVerticalAndHorizontalSeam3x4()
     {
         File file = new File(getClass().getResource("3x4.png").getFile());
         Picture picture = new Picture(file);
@@ -129,5 +151,123 @@ public class SeamCarverTest
         assertEquals(1, verticalSeam[1]);
         assertEquals(1, verticalSeam[2]);
         assertEquals(0, verticalSeam[3]);
+    }
+
+    @Test
+    public void testTwoHorizontalSeams3x4()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] horizontalSeam = seamCarver.findHorizontalSeam();
+        assertNotNull(horizontalSeam);
+        assertEquals(1, horizontalSeam[0]);
+        assertEquals(2, horizontalSeam[1]);
+        assertEquals(1, horizontalSeam[2]);
+        horizontalSeam = seamCarver.findHorizontalSeam();
+        assertNotNull(horizontalSeam);
+        assertEquals(1, horizontalSeam[0]);
+        assertEquals(2, horizontalSeam[1]);
+        assertEquals(1, horizontalSeam[2]);
+    }
+
+    @Test
+    public void testFindVerticalAndHorizontalSeam3x4_v2()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] horizontalSeam = seamCarver.findHorizontalSeam();
+        assertNotNull(horizontalSeam);
+        assertEquals(1, horizontalSeam[0]);
+        assertEquals(2, horizontalSeam[1]);
+        int [] verticalSeam = seamCarver.findVerticalSeam();
+        assertNotNull(verticalSeam);
+        assertEquals(0, verticalSeam[0]);
+        assertEquals(1, verticalSeam[1]);
+        assertEquals(1, verticalSeam[2]);
+        assertEquals(0, verticalSeam[3]);
+        assertEquals(1, horizontalSeam[2]);
+        horizontalSeam = seamCarver.findHorizontalSeam();
+        assertNotNull(horizontalSeam);
+        assertEquals(1, horizontalSeam[0]);
+        assertEquals(2, horizontalSeam[1]);
+
+    }
+
+    @Test
+    public void testFindVerticalAndHorizontalSeam6x5()
+    {
+        File file = new File(getClass().getResource("6x5.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] verticalSeam = seamCarver.findVerticalSeam();
+        assertNotNull(verticalSeam);
+        assertEquals(3, verticalSeam[0]);
+        assertEquals(4, verticalSeam[1]);
+        assertEquals(3, verticalSeam[2]);
+        assertEquals(2, verticalSeam[3]);
+        assertEquals(1, verticalSeam[4]);
+        int[] horizontalSeam = seamCarver.findHorizontalSeam();
+        assertNotNull(horizontalSeam);
+        assertEquals(1, horizontalSeam[0]);
+        assertEquals(2, horizontalSeam[1]);
+        assertEquals(1, horizontalSeam[2]);
+        assertEquals(2, horizontalSeam[3]);
+        assertEquals(1, horizontalSeam[4]);
+        assertEquals(0, horizontalSeam[5]);
+        verticalSeam = seamCarver.findVerticalSeam();
+        assertNotNull(verticalSeam);
+        assertEquals(3, verticalSeam[0]);
+        assertEquals(4, verticalSeam[1]);
+        assertEquals(3, verticalSeam[2]);
+        assertEquals(2, verticalSeam[3]);
+        assertEquals(1, verticalSeam[4]);
+    }
+
+    @Test
+    public void testFindVerticalAndHorizontalSeam12x10()
+    {
+        File file = new File(getClass().getResource("12x10.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] verticalSeam = seamCarver.findVerticalSeam();
+        assertNotNull(verticalSeam);
+        assertEquals(6, verticalSeam[0]);
+        assertEquals(7, verticalSeam[1]);
+        assertEquals(7, verticalSeam[2]);
+        assertEquals(6, verticalSeam[3]);
+        assertEquals(6, verticalSeam[4]);
+        assertEquals(7, verticalSeam[5]);
+        assertEquals(7, verticalSeam[6]);
+        assertEquals(7, verticalSeam[7]);
+        assertEquals(8, verticalSeam[8]);
+        assertEquals(7, verticalSeam[9]);
+        int[] horizontalSeam = seamCarver.findHorizontalSeam();
+        assertNotNull(horizontalSeam);
+        assertEquals(7, horizontalSeam[0]);
+        assertEquals(8, horizontalSeam[1]);
+        assertEquals(7, horizontalSeam[2]);
+        assertEquals(8, horizontalSeam[3]);
+        assertEquals(7, horizontalSeam[4]);
+        assertEquals(6, horizontalSeam[5]);
+        assertEquals(5, horizontalSeam[6]);
+        assertEquals(6, horizontalSeam[7]);
+        assertEquals(6, horizontalSeam[8]);
+        assertEquals(5, horizontalSeam[9]);
+        assertEquals(4, horizontalSeam[10]);
+        assertEquals(3, horizontalSeam[11]);
+        verticalSeam = seamCarver.findVerticalSeam();
+        assertNotNull(verticalSeam);
+        assertEquals(6, verticalSeam[0]);
+        assertEquals(7, verticalSeam[1]);
+        assertEquals(7, verticalSeam[2]);
+        assertEquals(6, verticalSeam[3]);
+        assertEquals(6, verticalSeam[4]);
+        assertEquals(7, verticalSeam[5]);
+        assertEquals(7, verticalSeam[6]);
+        assertEquals(7, verticalSeam[7]);
+        assertEquals(8, verticalSeam[8]);
+        assertEquals(7, verticalSeam[9]);
     }
 }

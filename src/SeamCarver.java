@@ -8,6 +8,7 @@ public class SeamCarver
     private double[][] energies;
     private double[][] cumulativeEnergies;
     private boolean isPictureTransposed;
+    private boolean calculatingVertical;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture)
@@ -16,6 +17,7 @@ public class SeamCarver
         this.energies = new double[width()][height()];
         this.cumulativeEnergies = new double[width()][height()];
         isPictureTransposed = false;
+        calculatingVertical = true;
 
         calculateEnergies();
         initializeCumulativeEnergies();
@@ -134,10 +136,13 @@ public class SeamCarver
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam()
     {
+        calculatingVertical = false;
         if (!isPictureTransposed)
             transposePicture();
 
-        return findVerticalSeam();
+        int[] horizontalSeam = findVerticalSeam();
+        calculatingVertical = true;
+        return horizontalSeam;
     }
 
     private void transposePicture()
@@ -158,8 +163,7 @@ public class SeamCarver
             }
         }
 
-        this.isPictureTransposed = true;
-
+        isPictureTransposed = true;
         // Transpose cumuliativeEnergies
         this.cumulativeEnergies = new double[width()][height()];
         initializeCumulativeEnergies();
@@ -168,6 +172,8 @@ public class SeamCarver
     // sequence of indices for vertical seam
     public int[] findVerticalSeam()
     {
+        if (isPictureTransposed && calculatingVertical)
+            transposePictureBack();
         // Fill cumulative energies
         for (int y = 0; y < height() - 1; y++)
         {
@@ -241,6 +247,26 @@ public class SeamCarver
 
     private void transposePictureBack()
     {
+        // Transpose energies
+        double[][] tempArray = new double[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.energies[x], 0, tempArray[x], 0, energies[x].length);
+        }
+
+        this.energies = new double[height()][width()];
+        for (int y = 0; y < height(); y++)
+        {
+            for (int x = 0; x < width(); x++)
+            {
+                this.energies[y][x] = tempArray[x][y];
+            }
+        }
+
+        isPictureTransposed = false;
+        // Transpose cumuliativeEnergies
+        this.cumulativeEnergies = new double[width()][height()];
+        initializeCumulativeEnergies();
     }
 
     private void relax(int destX, int destY, int sourceX, int sourceY)
@@ -263,5 +289,36 @@ public class SeamCarver
     public void removeVerticalSeam(int[] seam)
     {
 
+    }
+
+    private class SeamCarverStatus
+    {
+        private SeamType currentRun;
+        private SeamType lastRun;
+
+        public SeamType getCurrentRun()
+        {
+            return currentRun;
+        }
+
+        public void setCurrentRun(SeamType currentRun)
+        {
+            this.currentRun = currentRun;
+        }
+
+        public SeamType getLastRun()
+        {
+            return lastRun;
+        }
+
+        public void setLastRun(SeamType lastRun)
+        {
+            this.lastRun = lastRun;
+        }
+    }
+
+    private enum SeamType
+    {
+        HORIZONTAL, VERTICAL
     }
 }
