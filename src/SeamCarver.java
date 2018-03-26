@@ -290,35 +290,4 @@ public class SeamCarver
     {
 
     }
-
-    private class SeamCarverStatus
-    {
-        private SeamType currentRun;
-        private SeamType lastRun;
-
-        public SeamType getCurrentRun()
-        {
-            return currentRun;
-        }
-
-        public void setCurrentRun(SeamType currentRun)
-        {
-            this.currentRun = currentRun;
-        }
-
-        public SeamType getLastRun()
-        {
-            return lastRun;
-        }
-
-        public void setLastRun(SeamType lastRun)
-        {
-            this.lastRun = lastRun;
-        }
-    }
-
-    private enum SeamType
-    {
-        HORIZONTAL, VERTICAL
-    }
 }
