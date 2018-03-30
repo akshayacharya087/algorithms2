@@ -270,4 +270,15 @@ public class SeamCarverTest
         assertEquals(8, verticalSeam[8]);
         assertEquals(7, verticalSeam[9]);
     }
+
+    @Test
+    public void testRemoveVerticalSeam()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] verticalSeam = seamCarver.findVerticalSeam();
+        seamCarver.removeVerticalSeam(verticalSeam);
+    }
+
 }

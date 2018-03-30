@@ -1,26 +1,49 @@
 import edu.princeton.cs.algs4.Picture;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 public class SeamCarver
 {
     private Picture picture;
+    private Picture externalPicture;
+    private int width;
+    private int height;
+    private int[][] pixels;
     private double[][] energies;
     private double[][] cumulativeEnergies;
     private boolean isPictureTransposed;
     private boolean calculatingVertical;
 
+
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture)
     {
-        this.picture = picture;
+        this.picture = new Picture(picture);
+        this.externalPicture = picture;
+        this.width = picture.width();
+        this.height = picture.height();
+        this.pixels = new int[width()][height()];
         this.energies = new double[width()][height()];
         this.cumulativeEnergies = new double[width()][height()];
         isPictureTransposed = false;
         calculatingVertical = true;
 
+        createPixels();
         calculateEnergies();
         initializeCumulativeEnergies();
+    }
+
+    private void createPixels()
+    {
+        for (int x = 0; x < this.picture.width(); x++)
+        {
+            for (int y = 0; y < this.picture.height(); y++)
+            {
+                this.pixels[x][y] = this.picture.getRGB(x, y);
+            }
+        }
     }
 
     private void initializeCumulativeEnergies()
@@ -55,25 +78,25 @@ public class SeamCarver
     // current picture
     public Picture picture()
     {
-        return this.picture;
+        return this.externalPicture;
     }
 
     // width of current picture
     public int width()
     {
         if (isPictureTransposed)
-            return picture.height();
+            return this.height;
         else
-            return picture.width();
+            return this.width;
     }
 
     // height of current picture
     public int height()
     {
         if (isPictureTransposed)
-            return picture.width();
+            return this.width;
         else
-            return picture.height();
+            return this.height;
     }
 
     // energy of pixel at column x and row y
@@ -286,8 +309,60 @@ public class SeamCarver
 
     }
 
+    // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam)
     {
+        List<Pixel> pixelsToRecalculate = new ArrayList<>();
+
+        // Removing pixels from energy matrix
+        // making a copy of energies
+        transposePicture();
+        double[][] tempArray = new double[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(energies[x], 0, tempArray[x], 0, energies[x].length);
+        }
+
+        energies = new double[width()][height() - 1];
+        int seamIndex = 0;
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(tempArray[x], 0, energies[x], 0, seam[seamIndex]);
+            System.arraycopy(tempArray[x], seam[seamIndex] + 1, energies[x], seam[seamIndex], tempArray[x].length - (seam[seamIndex] + 1));
+            pixelsToRecalculate.add(new Pixel(seam[seamIndex] - 1, x)); // left
+            pixelsToRecalculate.add(new Pixel(seam[seamIndex], x)); // right
+            pixelsToRecalculate.add(new Pixel(seam[seamIndex], x - 1)); // up
+            pixelsToRecalculate.add(new Pixel(seam[seamIndex], x + 1)); // down
+            seamIndex++;
+        }
+
+        width--;
+        transposePictureBack();
+
+        // Recalculate energies around removals
+//        for (Pixel pixel : pixelsToRecalculate)
+//        {
+//            try
+//            {
+//                energies[pixel.x][pixel.y] = energy(pixel.x, pixel.y);
+//            }
+//            catch (IllegalArgumentException e)
+//            {
+//                // do nothing;
+//            }
+//        }
+    }
+
+    private class Pixel
+    {
+        public int x;
+        public int y;
+
+        public Pixel(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
 
     }
 }
