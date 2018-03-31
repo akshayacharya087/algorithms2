@@ -122,13 +122,13 @@ public class SeamCarver
     private int calculateXGradient(int x, int y)
     {
         // Getting rgb's of right pixel
-        int rgbRight = this.picture.getRGB(x + 1, y);
+        int rgbRight = this.pixels[x + 1][y];
         int redXRight  = (rgbRight >> 16) & 0XFF;
         int greenXRight = (rgbRight >> 8) & 0XFF;
         int blueXRight  = (rgbRight) & 0xff;
 
         // Getting rgb's of left pixel
-        int rgbLeft = this.picture.getRGB(x - 1, y);
+        int rgbLeft = this.pixels[x - 1][y];
         int redXLeft  = (rgbLeft >> 16) & 0XFF;
         int greenXLeft = (rgbLeft >> 8) & 0XFF;
         int blueXLeft  = (rgbLeft) & 0xff;
@@ -141,12 +141,12 @@ public class SeamCarver
     private int calculateYGradient(int x, int y)
     {
 
-        int rgbDown = this.picture.getRGB(x, y + 1);
+        int rgbDown = this.pixels[x][y + 1];
         int redYDown  = (rgbDown >> 16) & 0XFF;
         int greenYDown = (rgbDown >> 8) & 0XFF;
         int blueYDown  = (rgbDown) & 0xff;
 
-        int rgbUp = this.picture.getRGB(x, y - 1);
+        int rgbUp = this.pixels[x][y - 1];
         int redYUp = (rgbUp >> 16) & 0XFF;
         int greenYUp = (rgbUp >> 8) & 0XFF;
         int blueYUp  = (rgbUp) & 0xff;
@@ -185,6 +185,23 @@ public class SeamCarver
                 this.energies[y][x] = tempArray[x][y];
             }
         }
+
+        // Transpose pixels
+        int[][] tempPixelsArray = new int[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.pixels[x], 0, tempPixelsArray[x], 0, pixels[x].length);
+        }
+
+        this.pixels = new int[height()][width()];
+        for (int y = 0; y < height(); y++)
+        {
+            for (int x = 0; x < width(); x++)
+            {
+                this.pixels[y][x] = tempPixelsArray[x][y];
+            }
+        }
+
 
         isPictureTransposed = true;
         // Transpose cumuliativeEnergies
@@ -286,6 +303,23 @@ public class SeamCarver
             }
         }
 
+        // Transpose pixels
+        int[][] tempPixelsArray = new int[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.pixels[x], 0, tempPixelsArray[x], 0, this.pixels[x].length);
+        }
+
+        this.pixels = new int[height()][width()];
+        for (int y = 0; y < height(); y++)
+        {
+            for (int x = 0; x < width(); x++)
+            {
+                this.pixels[y][x] = tempPixelsArray[x][y];
+            }
+        }
+
+
         isPictureTransposed = false;
         // Transpose cumuliativeEnergies
         this.cumulativeEnergies = new double[width()][height()];
@@ -306,7 +340,67 @@ public class SeamCarver
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam)
     {
+        List<Pixel> pixelsToRecalculate = new ArrayList<>();
 
+        // Removing pixels from energy matrix
+        // making a copy of energies
+        if (isPictureTransposed)
+        {
+            transposePictureBack();
+        }
+
+        // Copying energies grid
+        double[][] tempArray = new double[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.energies[x], 0, tempArray[x], 0, this.energies[x].length);
+        }
+
+        // Copying pixels grid
+        int[][] tempPixelsArray = new int[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.pixels[x], 0, tempPixelsArray[x], 0, this.pixels[x].length);
+        }
+
+        this.energies = new double[width()][height() - 1];
+        this.pixels = new int[width()][height() - 1];
+        int seamIndex = 0;
+        for (int x = 0; x < width(); x++)
+        {
+            // Removing seam in energies grid
+            System.arraycopy(tempArray[x], 0, this.energies[x], 0, seam[seamIndex]);
+            System.arraycopy(tempArray[x], seam[seamIndex] + 1, this.energies[x], seam[seamIndex], tempArray[x].length - (seam[seamIndex] + 1));
+
+            // Removing seam in pixels grid
+            System.arraycopy(tempPixelsArray[x], 0, this.pixels[x], 0, seam[seamIndex]);
+            System.arraycopy(tempPixelsArray[x], seam[seamIndex] + 1, this.pixels[x], seam[seamIndex], tempPixelsArray[x].length - (seam[seamIndex] + 1));
+
+            pixelsToRecalculate.add(new Pixel(seam[seamIndex] - 1, x)); // left
+            pixelsToRecalculate.add(new Pixel(seam[seamIndex], x)); // right
+            pixelsToRecalculate.add(new Pixel(seam[seamIndex], x - 1)); // up
+            pixelsToRecalculate.add(new Pixel(seam[seamIndex], x + 1)); // down
+            seamIndex++;
+        }
+
+        height--;
+
+        // Recalculate energies around removals
+        for (Pixel pixel : pixelsToRecalculate)
+        {
+            try
+            {
+                this.energies[pixel.x][pixel.y] = energy(pixel.x, pixel.y);
+            }
+            catch (IllegalArgumentException e)
+            {
+                // do nothing;
+            }
+            catch (ArrayIndexOutOfBoundsException a)
+            {
+                // do nothing
+            }
+        }
     }
 
     // remove vertical seam from current picture
@@ -316,19 +410,38 @@ public class SeamCarver
 
         // Removing pixels from energy matrix
         // making a copy of energies
-        transposePicture();
+        if (!isPictureTransposed)
+        {
+            transposePicture();
+        }
+
+        // Copying energies grid
         double[][] tempArray = new double[width()][height()];
         for (int x = 0; x < width(); x++)
         {
-            System.arraycopy(energies[x], 0, tempArray[x], 0, energies[x].length);
+            System.arraycopy(this.energies[x], 0, tempArray[x], 0, this.energies[x].length);
         }
 
-        energies = new double[width()][height() - 1];
+        // Copying pixels grid
+        int[][] tempPixelsArray = new int[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.pixels[x], 0, tempPixelsArray[x], 0, this.pixels[x].length);
+        }
+
+        this.energies = new double[width()][height() - 1];
+        this.pixels = new int[width()][height() - 1];
         int seamIndex = 0;
         for (int x = 0; x < width(); x++)
         {
-            System.arraycopy(tempArray[x], 0, energies[x], 0, seam[seamIndex]);
-            System.arraycopy(tempArray[x], seam[seamIndex] + 1, energies[x], seam[seamIndex], tempArray[x].length - (seam[seamIndex] + 1));
+            // Removing seam in energies grid
+            System.arraycopy(tempArray[x], 0, this.energies[x], 0, seam[seamIndex]);
+            System.arraycopy(tempArray[x], seam[seamIndex] + 1, this.energies[x], seam[seamIndex], tempArray[x].length - (seam[seamIndex] + 1));
+
+            // Removing seam in pixels grid
+            System.arraycopy(tempPixelsArray[x], 0, this.pixels[x], 0, seam[seamIndex]);
+            System.arraycopy(tempPixelsArray[x], seam[seamIndex] + 1, this.pixels[x], seam[seamIndex], tempPixelsArray[x].length - (seam[seamIndex] + 1));
+
             pixelsToRecalculate.add(new Pixel(seam[seamIndex] - 1, x)); // left
             pixelsToRecalculate.add(new Pixel(seam[seamIndex], x)); // right
             pixelsToRecalculate.add(new Pixel(seam[seamIndex], x - 1)); // up
@@ -340,18 +453,23 @@ public class SeamCarver
         transposePictureBack();
 
         // Recalculate energies around removals
-//        for (Pixel pixel : pixelsToRecalculate)
-//        {
-//            try
-//            {
-//                energies[pixel.x][pixel.y] = energy(pixel.x, pixel.y);
-//            }
-//            catch (IllegalArgumentException e)
-//            {
-//                // do nothing;
-//            }
-//        }
+        for (Pixel pixel : pixelsToRecalculate)
+        {
+            try
+            {
+                this.energies[pixel.x][pixel.y] = energy(pixel.x, pixel.y);
+            }
+            catch (IllegalArgumentException e)
+            {
+                // do nothing;
+            }
+            catch (ArrayIndexOutOfBoundsException a)
+            {
+                // do nothing
+            }
+        }
     }
+
 
     private class Pixel
     {

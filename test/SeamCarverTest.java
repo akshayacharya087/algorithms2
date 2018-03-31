@@ -281,4 +281,13 @@ public class SeamCarverTest
         seamCarver.removeVerticalSeam(verticalSeam);
     }
 
+    @Test
+    public void testRemoveHorizontalSeam()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] verticalSeam = seamCarver.findHorizontalSeam();
+        seamCarver.removeHorizontalSeam(verticalSeam);
+    }
 }
