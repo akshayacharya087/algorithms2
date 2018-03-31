@@ -2,7 +2,6 @@ bin/
 .classpath
 .project
 .settings
-.zip
 .iml
 .idea
 out/
