@@ -290,4 +290,82 @@ public class SeamCarverTest
         int[] verticalSeam = seamCarver.findHorizontalSeam();
         seamCarver.removeHorizontalSeam(verticalSeam);
     }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testRemoveHorizontalSeam_InvalidSeam()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] horizontalSeam = {1, 5, 1};
+        seamCarver.removeHorizontalSeam(horizontalSeam);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testRemoveHorizontalSeam_WrongArrayLength()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] horizontalSeam = {1, 2, 1, 1};
+        seamCarver.removeHorizontalSeam(horizontalSeam);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testRemoveHorizontalSeam_InvalidSeamDistanceGreaterThanOne()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] horizontalSeam = {0, 2, 1};
+        seamCarver.removeHorizontalSeam(horizontalSeam);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testRemoveHorizontalSeam_NullSeam()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        seamCarver.removeHorizontalSeam(null);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testRemoveVerticalSeam_InvalidSeam()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] verticalSeam = {1, 1, 5, 0};
+        seamCarver.removeVerticalSeam(verticalSeam);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testRemoveVerticalSeam_WrongArrayLength()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] verticalSeam = {0, 1, 1, 0, 0};
+        seamCarver.removeVerticalSeam(verticalSeam);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testRemoveVerticalSeam_InvalidSeamDistanceGreaterThanOne()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        int[] verticalSeam = {0, 2, 2, 0};
+        seamCarver.removeVerticalSeam(verticalSeam);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testRemoveVerticalSeam_NullSeam()
+    {
+        File file = new File(getClass().getResource("3x4.png").getFile());
+        Picture picture = new Picture(file);
+        SeamCarver seamCarver = new SeamCarver(picture);
+        seamCarver.removeVerticalSeam(null);
+    }
 }

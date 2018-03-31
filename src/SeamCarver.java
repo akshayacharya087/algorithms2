@@ -20,6 +20,7 @@ public class SeamCarver
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture)
     {
+        if (picture == null) throw new IllegalArgumentException();
         this.picture = new Picture(picture);
         this.externalPicture = picture;
         this.width = picture.width();
@@ -78,7 +79,18 @@ public class SeamCarver
     // current picture
     public Picture picture()
     {
-        return this.externalPicture;
+        if (isPictureTransposed)
+            transposePictureBack();
+        Picture picture = new Picture(width(), height());
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height(); y++)
+            {
+                picture.setRGB(x, y, this.pixels[x][y]);
+            }
+        }
+
+        return picture;
     }
 
     // width of current picture
@@ -168,47 +180,6 @@ public class SeamCarver
         return horizontalSeam;
     }
 
-    private void transposePicture()
-    {
-        // Transpose energies
-        double[][] tempArray = new double[width()][height()];
-        for (int x = 0; x < width(); x++)
-        {
-            System.arraycopy(this.energies[x], 0, tempArray[x], 0, energies[x].length);
-        }
-
-        this.energies = new double[height()][width()];
-        for (int y = 0; y < height(); y++)
-        {
-            for (int x = 0; x < width(); x++)
-            {
-                this.energies[y][x] = tempArray[x][y];
-            }
-        }
-
-        // Transpose pixels
-        int[][] tempPixelsArray = new int[width()][height()];
-        for (int x = 0; x < width(); x++)
-        {
-            System.arraycopy(this.pixels[x], 0, tempPixelsArray[x], 0, pixels[x].length);
-        }
-
-        this.pixels = new int[height()][width()];
-        for (int y = 0; y < height(); y++)
-        {
-            for (int x = 0; x < width(); x++)
-            {
-                this.pixels[y][x] = tempPixelsArray[x][y];
-            }
-        }
-
-
-        isPictureTransposed = true;
-        // Transpose cumuliativeEnergies
-        this.cumulativeEnergies = new double[width()][height()];
-        initializeCumulativeEnergies();
-    }
-
     // sequence of indices for vertical seam
     public int[] findVerticalSeam()
     {
@@ -235,9 +206,9 @@ public class SeamCarver
             {
                 minBottom = cumulativeEnergies[x][height() - 1];
                 minX = x;
-                shortestPath.push(minX);
             }
         }
+        shortestPath.push(minX);
 
         // Find shortest path from the shortest cumulative vertex in bottom row, working its way up the grid.
         for (int y = height() - 1; y > 0; y--)
@@ -283,6 +254,47 @@ public class SeamCarver
         }
 
         return shortestPathArray;
+    }
+
+    private void transposePicture()
+    {
+        // Transpose energies
+        double[][] tempArray = new double[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.energies[x], 0, tempArray[x], 0, energies[x].length);
+        }
+
+        this.energies = new double[height()][width()];
+        for (int y = 0; y < height(); y++)
+        {
+            for (int x = 0; x < width(); x++)
+            {
+                this.energies[y][x] = tempArray[x][y];
+            }
+        }
+
+        // Transpose pixels
+        int[][] tempPixelsArray = new int[width()][height()];
+        for (int x = 0; x < width(); x++)
+        {
+            System.arraycopy(this.pixels[x], 0, tempPixelsArray[x], 0, pixels[x].length);
+        }
+
+        this.pixels = new int[height()][width()];
+        for (int y = 0; y < height(); y++)
+        {
+            for (int x = 0; x < width(); x++)
+            {
+                this.pixels[y][x] = tempPixelsArray[x][y];
+            }
+        }
+
+
+        isPictureTransposed = true;
+        // Transpose cumuliativeEnergies
+        this.cumulativeEnergies = new double[width()][height()];
+        initializeCumulativeEnergies();
     }
 
     private void transposePictureBack()
@@ -340,6 +352,8 @@ public class SeamCarver
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam)
     {
+        validateSeam(seam, height, width);
+
         List<Pixel> pixelsToRecalculate = new ArrayList<>();
 
         // Removing pixels from energy matrix
@@ -406,6 +420,8 @@ public class SeamCarver
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam)
     {
+        validateSeam(seam, width, height);
+
         List<Pixel> pixelsToRecalculate = new ArrayList<>();
 
         // Removing pixels from energy matrix
@@ -470,6 +486,24 @@ public class SeamCarver
         }
     }
 
+    private void validateSeam(int[] seam, int width, int height)
+    {
+        if (seam == null) throw new IllegalArgumentException();
+
+        for (int i = 0 ; i < seam.length; i++)
+        {
+            if (seam[i] < 0 || seam[i] >= width)
+                throw new IllegalArgumentException();
+            if (i < seam.length - 1)
+            {
+                if (Math.abs(seam[i] - seam[i + 1]) > 1)
+                    throw new IllegalArgumentException();
+            }
+        }
+
+        if (seam.length > height || seam.length < height)
+            throw new IllegalArgumentException();
+    }
 
     private class Pixel
     {
